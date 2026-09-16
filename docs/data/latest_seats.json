@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-16 14:38:56 (KST)",
+  "updated_at": "2026-09-16 14:55:42 (KST)",
   "departure": "ICN",
   "departure_name": "서울/인천",
   "months": [
@@ -123,7 +123,7 @@
       "destination": "NRT",
       "destination_name": "도쿄/나리타",
       "month": "202609",
-      "total_seats": 72,
+      "total_seats": 70,
       "classes": [
         "O",
         "X",
@@ -144,30 +144,6 @@
         "20260930"
       ],
       "sample_flights": [
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "NRT",
-          "arrival_name": "도쿄/나리타, 일본",
-          "flight_number": "KE707",
-          "departure_time": "14:45",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "NRT",
-          "arrival_name": "도쿄/나리타, 일본",
-          "flight_number": "KE5093",
-          "departure_time": "14:45",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
         {
           "date": "20260916",
           "departure": "ICN",
@@ -260,6 +236,30 @@
           "arrival_name": "도쿄/나리타, 일본",
           "flight_number": "KE713",
           "departure_time": "17:15",
+          "booking_class": "O",
+          "front_class": "P",
+          "available": true
+        },
+        {
+          "date": "20260917",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "NRT",
+          "arrival_name": "도쿄/나리타, 일본",
+          "flight_number": "KE705",
+          "departure_time": "18:35",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260917",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "NRT",
+          "arrival_name": "도쿄/나리타, 일본",
+          "flight_number": "KE705",
+          "departure_time": "18:35",
           "booking_class": "O",
           "front_class": "P",
           "available": true
@@ -42593,7 +42593,7 @@
           "departure_time": "14:45",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -42605,7 +42605,7 @@
           "departure_time": "14:45",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
