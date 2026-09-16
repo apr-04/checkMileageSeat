@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-16 18:27:02 (KST)",
+  "updated_at": "2026-09-16 23:20:22 (KST)",
   "departure": "ICN",
   "departure_name": "서울/인천",
   "months": [
@@ -123,14 +123,13 @@
       "destination": "NRT",
       "destination_name": "도쿄/나리타",
       "month": "202609",
-      "total_seats": 69,
+      "total_seats": 66,
       "classes": [
         "O",
         "X",
         "Z"
       ],
       "dates": [
-        "20260916",
         "20260917",
         "20260918",
         "20260919",
@@ -144,30 +143,6 @@
         "20260930"
       ],
       "sample_flights": [
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "NRT",
-          "arrival_name": "도쿄/나리타, 일본",
-          "flight_number": "KE705",
-          "departure_time": "18:35",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "NRT",
-          "arrival_name": "도쿄/나리타, 일본",
-          "flight_number": "KE705",
-          "departure_time": "18:35",
-          "booking_class": "O",
-          "front_class": "P",
-          "available": true
-        },
         {
           "date": "20260917",
           "departure": "ICN",
@@ -260,6 +235,30 @@
           "arrival_name": "도쿄/나리타, 일본",
           "flight_number": "KE703",
           "departure_time": "10:10",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260918",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "NRT",
+          "arrival_name": "도쿄/나리타, 일본",
+          "flight_number": "KE707",
+          "departure_time": "14:45",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260918",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "NRT",
+          "arrival_name": "도쿄/나리타, 일본",
+          "flight_number": "KE705",
+          "departure_time": "18:35",
           "booking_class": "X",
           "front_class": "E",
           "available": true
@@ -2100,14 +2099,13 @@
       "destination": "HND",
       "destination_name": "도쿄/하네다",
       "month": "202609",
-      "total_seats": 25,
+      "total_seats": 22,
       "classes": [
         "O",
         "X",
         "Z"
       ],
       "dates": [
-        "20260916",
         "20260917",
         "20260918",
         "20260919",
@@ -2120,30 +2118,6 @@
         "20260930"
       ],
       "sample_flights": [
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "HND",
-          "arrival_name": "도쿄/하네다, 일본",
-          "flight_number": "KE751",
-          "departure_time": "20:30",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "HND",
-          "arrival_name": "도쿄/하네다, 일본",
-          "flight_number": "KE751",
-          "departure_time": "20:30",
-          "booking_class": "O",
-          "front_class": "P",
-          "available": true
-        },
         {
           "date": "20260917",
           "departure": "ICN",
@@ -2230,6 +2204,30 @@
         },
         {
           "date": "20260926",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "HND",
+          "arrival_name": "도쿄/하네다, 일본",
+          "flight_number": "KE751",
+          "departure_time": "20:30",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260927",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "HND",
+          "arrival_name": "도쿄/하네다, 일본",
+          "flight_number": "KE751",
+          "departure_time": "20:30",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260928",
           "departure": "ICN",
           "departure_name": "서울/인천, 대한민국",
           "arrival": "HND",
@@ -4072,14 +4070,13 @@
       "destination": "KIX",
       "destination_name": "오사카/간사이",
       "month": "202609",
-      "total_seats": 72,
+      "total_seats": 70,
       "classes": [
         "O",
         "X",
         "Z"
       ],
       "dates": [
-        "20260916",
         "20260917",
         "20260918",
         "20260919",
@@ -4093,30 +4090,6 @@
         "20260930"
       ],
       "sample_flights": [
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "KIX",
-          "arrival_name": "오사카/간사이, 일본",
-          "flight_number": "KE721",
-          "departure_time": "18:45",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "KIX",
-          "arrival_name": "오사카/간사이, 일본",
-          "flight_number": "KE737",
-          "departure_time": "20:50",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
         {
           "date": "20260917",
           "departure": "ICN",
@@ -4211,6 +4184,30 @@
           "departure_time": "18:45",
           "booking_class": "X",
           "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260918",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "KIX",
+          "arrival_name": "오사카/간사이, 일본",
+          "flight_number": "KE737",
+          "departure_time": "20:50",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260919",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "KIX",
+          "arrival_name": "오사카/간사이, 일본",
+          "flight_number": "KE723",
+          "departure_time": "09:35",
+          "booking_class": "O",
+          "front_class": "P",
           "available": true
         }
       ]
@@ -6050,14 +6047,13 @@
       "destination": "FUK",
       "destination_name": "후쿠오카",
       "month": "202609",
-      "total_seats": 98,
+      "total_seats": 97,
       "classes": [
         "O",
         "X",
         "Z"
       ],
       "dates": [
-        "20260916",
         "20260917",
         "20260918",
         "20260919",
@@ -6071,18 +6067,6 @@
         "20260930"
       ],
       "sample_flights": [
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "FUK",
-          "arrival_name": "후쿠오카, 일본",
-          "flight_number": "KE781",
-          "departure_time": "18:35",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
         {
           "date": "20260917",
           "departure": "ICN",
@@ -6189,6 +6173,18 @@
           "departure_time": "08:00",
           "booking_class": "O",
           "front_class": "P",
+          "available": true
+        },
+        {
+          "date": "20260918",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "FUK",
+          "arrival_name": "후쿠오카, 일본",
+          "flight_number": "KE791",
+          "departure_time": "11:05",
+          "booking_class": "X",
+          "front_class": "E",
           "available": true
         }
       ]
@@ -11889,14 +11885,13 @@
       "destination": "BKK",
       "destination_name": "방콕/수완나품",
       "month": "202609",
-      "total_seats": 106,
+      "total_seats": 100,
       "classes": [
         "O",
         "X",
         "Z"
       ],
       "dates": [
-        "20260916",
         "20260917",
         "20260918",
         "20260919",
@@ -11914,54 +11909,6 @@
       ],
       "sample_flights": [
         {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "BKK",
-          "arrival_name": "방콕/수완나품, 태국",
-          "flight_number": "KE659",
-          "departure_time": "19:45",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "BKK",
-          "arrival_name": "방콕/수완나품, 태국",
-          "flight_number": "KE659",
-          "departure_time": "19:45",
-          "booking_class": "O",
-          "front_class": "P",
-          "available": true
-        },
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "BKK",
-          "arrival_name": "방콕/수완나품, 태국",
-          "flight_number": "KE655",
-          "departure_time": "21:15",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "BKK",
-          "arrival_name": "방콕/수완나품, 태국",
-          "flight_number": "KE655",
-          "departure_time": "21:15",
-          "booking_class": "O",
-          "front_class": "P",
-          "available": true
-        },
-        {
           "date": "20260917",
           "departure": "ICN",
           "departure_name": "서울/인천, 대한민국",
@@ -12031,6 +11978,54 @@
           "departure_time": "19:45",
           "booking_class": "O",
           "front_class": "P",
+          "available": true
+        },
+        {
+          "date": "20260917",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "BKK",
+          "arrival_name": "방콕/수완나품, 태국",
+          "flight_number": "KE655",
+          "departure_time": "21:15",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260917",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "BKK",
+          "arrival_name": "방콕/수완나품, 태국",
+          "flight_number": "KE655",
+          "departure_time": "21:15",
+          "booking_class": "O",
+          "front_class": "P",
+          "available": true
+        },
+        {
+          "date": "20260918",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "BKK",
+          "arrival_name": "방콕/수완나품, 태국",
+          "flight_number": "KE657",
+          "departure_time": "09:45",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260918",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "BKK",
+          "arrival_name": "방콕/수완나품, 태국",
+          "flight_number": "KE651",
+          "departure_time": "18:05",
+          "booking_class": "X",
+          "front_class": "E",
           "available": true
         }
       ]
@@ -13866,14 +13861,13 @@
       "destination": "DAD",
       "destination_name": "다낭",
       "month": "202609",
-      "total_seats": 49,
+      "total_seats": 48,
       "classes": [
         "O",
         "X",
         "Z"
       ],
       "dates": [
-        "20260916",
         "20260917",
         "20260918",
         "20260919",
@@ -13890,18 +13884,6 @@
       ],
       "sample_flights": [
         {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "DAD",
-          "arrival_name": "다낭, 베트남",
-          "flight_number": "KE5769",
-          "departure_time": "20:30",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
-        {
           "date": "20260917",
           "departure": "ICN",
           "departure_name": "서울/인천, 대한민국",
@@ -14005,6 +13987,18 @@
           "arrival_name": "다낭, 베트남",
           "flight_number": "KE459",
           "departure_time": "18:20",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260920",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "DAD",
+          "arrival_name": "다낭, 베트남",
+          "flight_number": "KE5769",
+          "departure_time": "20:30",
           "booking_class": "X",
           "front_class": "E",
           "available": true
@@ -15844,7 +15838,7 @@
       "destination": "SIN",
       "destination_name": "싱가포르",
       "month": "202609",
-      "total_seats": 57,
+      "total_seats": 54,
       "classes": [
         "N",
         "O",
@@ -15875,30 +15869,6 @@
           "departure_name": "서울/인천, 대한민국",
           "arrival": "SIN",
           "arrival_name": "싱가포르/창이, 싱가포르",
-          "flight_number": "KE645",
-          "departure_time": "18:40",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "SIN",
-          "arrival_name": "싱가포르/창이, 싱가포르",
-          "flight_number": "KE645",
-          "departure_time": "18:40",
-          "booking_class": "O",
-          "front_class": "P",
-          "available": true
-        },
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "SIN",
-          "arrival_name": "싱가포르/창이, 싱가포르",
           "flight_number": "KE647",
           "departure_time": "23:35",
           "booking_class": "X",
@@ -15985,6 +15955,30 @@
           "arrival_name": "싱가포르/창이, 싱가포르",
           "flight_number": "KE645",
           "departure_time": "18:40",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260920",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "SIN",
+          "arrival_name": "싱가포르/창이, 싱가포르",
+          "flight_number": "KE645",
+          "departure_time": "18:40",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260920",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "SIN",
+          "arrival_name": "싱가포르/창이, 싱가포르",
+          "flight_number": "KE647",
+          "departure_time": "23:35",
           "booking_class": "X",
           "front_class": "E",
           "available": true
@@ -19785,14 +19779,13 @@
       "destination": "GUM",
       "destination_name": "괌",
       "month": "202609",
-      "total_seats": 76,
+      "total_seats": 72,
       "classes": [
         "O",
         "X",
         "Z"
       ],
       "dates": [
-        "20260916",
         "20260917",
         "20260918",
         "20260919",
@@ -19810,42 +19803,6 @@
       ],
       "sample_flights": [
         {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "GUM",
-          "arrival_name": "괌, 괌",
-          "flight_number": "KE417",
-          "departure_time": "18:25",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "GUM",
-          "arrival_name": "괌, 괌",
-          "flight_number": "KE417",
-          "departure_time": "18:25",
-          "booking_class": "O",
-          "front_class": "P",
-          "available": true
-        },
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "GUM",
-          "arrival_name": "괌, 괌",
-          "flight_number": "KE5779",
-          "departure_time": "19:45",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
-        {
           "date": "20260917",
           "departure": "ICN",
           "departure_name": "서울/인천, 대한민국",
@@ -19925,6 +19882,42 @@
           "arrival_name": "괌, 괌",
           "flight_number": "KE417",
           "departure_time": "18:25",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260918",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "GUM",
+          "arrival_name": "괌, 괌",
+          "flight_number": "KE417",
+          "departure_time": "18:25",
+          "booking_class": "O",
+          "front_class": "P",
+          "available": true
+        },
+        {
+          "date": "20260918",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "GUM",
+          "arrival_name": "괌, 괌",
+          "flight_number": "KE5779",
+          "departure_time": "19:45",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260919",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "GUM",
+          "arrival_name": "괌, 괌",
+          "flight_number": "KE415",
+          "departure_time": "10:05",
           "booking_class": "X",
           "front_class": "E",
           "available": true
@@ -21767,14 +21760,13 @@
       "destination": "TPE",
       "destination_name": "타이베이/타오위안",
       "month": "202609",
-      "total_seats": 78,
+      "total_seats": 77,
       "classes": [
         "O",
         "X",
         "Z"
       ],
       "dates": [
-        "20260916",
         "20260917",
         "20260918",
         "20260919",
@@ -21791,18 +21783,6 @@
       ],
       "sample_flights": [
         {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "TPE",
-          "arrival_name": "타이베이/타오위엔",
-          "flight_number": "KE5759",
-          "departure_time": "22:40",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
-        {
           "date": "20260917",
           "departure": "ICN",
           "departure_name": "서울/인천, 대한민국",
@@ -21908,6 +21888,18 @@
           "departure_time": "16:10",
           "booking_class": "O",
           "front_class": "P",
+          "available": true
+        },
+        {
+          "date": "20260918",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "TPE",
+          "arrival_name": "타이베이/타오위엔",
+          "flight_number": "KE5759",
+          "departure_time": "22:40",
+          "booking_class": "X",
+          "front_class": "E",
           "available": true
         }
       ]
@@ -23746,14 +23738,13 @@
       "destination": "HKG",
       "destination_name": "홍콩",
       "month": "202609",
-      "total_seats": 72,
+      "total_seats": 69,
       "classes": [
         "O",
         "X",
         "Z"
       ],
       "dates": [
-        "20260916",
         "20260917",
         "20260918",
         "20260919",
@@ -23770,30 +23761,6 @@
         "20260930"
       ],
       "sample_flights": [
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "HKG",
-          "arrival_name": "홍콩",
-          "flight_number": "KE2011",
-          "departure_time": "19:45",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "HKG",
-          "arrival_name": "홍콩",
-          "flight_number": "KE2011",
-          "departure_time": "19:45",
-          "booking_class": "O",
-          "front_class": "P",
-          "available": true
-        },
         {
           "date": "20260917",
           "departure": "ICN",
@@ -23886,6 +23853,30 @@
           "arrival_name": "홍콩",
           "flight_number": "KE2001",
           "departure_time": "08:05",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260919",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "HKG",
+          "arrival_name": "홍콩",
+          "flight_number": "KE2005",
+          "departure_time": "13:25",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260919",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "HKG",
+          "arrival_name": "홍콩",
+          "flight_number": "KE2011",
+          "departure_time": "19:45",
           "booking_class": "X",
           "front_class": "E",
           "available": true
@@ -25726,14 +25717,13 @@
       "destination": "HNL",
       "destination_name": "호놀룰루(하와이)",
       "month": "202609",
-      "total_seats": 22,
+      "total_seats": 21,
       "classes": [
         "O",
         "X",
         "Z"
       ],
       "dates": [
-        "20260916",
         "20260919",
         "20260920",
         "20260924",
@@ -25745,18 +25735,6 @@
         "20260930"
       ],
       "sample_flights": [
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "HNL",
-          "arrival_name": "호놀룰루 (하와이), HI, 미국",
-          "flight_number": "KE8053",
-          "departure_time": "22:35",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
         {
           "date": "20260919",
           "departure": "ICN",
@@ -25861,6 +25839,18 @@
           "arrival_name": "호놀룰루 (하와이), HI, 미국",
           "flight_number": "KE053",
           "departure_time": "21:05",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260927",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "HNL",
+          "arrival_name": "호놀룰루 (하와이), HI, 미국",
+          "flight_number": "KE8053",
+          "departure_time": "22:35",
           "booking_class": "X",
           "front_class": "E",
           "available": true
@@ -27681,13 +27671,12 @@
       "destination": "LAX",
       "destination_name": "로스앤젤레스",
       "month": "202609",
-      "total_seats": 31,
+      "total_seats": 30,
       "classes": [
         "X",
         "Z"
       ],
       "dates": [
-        "20260916",
         "20260917",
         "20260918",
         "20260919",
@@ -27704,18 +27693,6 @@
         "20260930"
       ],
       "sample_flights": [
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "LAX",
-          "arrival_name": "로스앤젤레스, CA, 미국",
-          "flight_number": "KE011",
-          "departure_time": "19:40",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
         {
           "date": "20260917",
           "departure": "ICN",
@@ -27820,6 +27797,18 @@
           "arrival_name": "로스앤젤레스, CA, 미국",
           "flight_number": "KE011",
           "departure_time": "19:40",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260923",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "LAX",
+          "arrival_name": "로스앤젤레스, CA, 미국",
+          "flight_number": "KE017",
+          "departure_time": "14:30",
           "booking_class": "X",
           "front_class": "E",
           "available": true
@@ -29637,13 +29626,12 @@
       "destination": "JFK",
       "destination_name": "뉴욕/JFK",
       "month": "202609",
-      "total_seats": 23,
+      "total_seats": 21,
       "classes": [
         "X",
         "Z"
       ],
       "dates": [
-        "20260916",
         "20260917",
         "20260918",
         "20260920",
@@ -29658,18 +29646,6 @@
         "20260930"
       ],
       "sample_flights": [
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "JFK",
-          "arrival_name": "뉴욕/존 F. 케네디, NY, 미국",
-          "flight_number": "KE085",
-          "departure_time": "19:30",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
         {
           "date": "20260917",
           "departure": "ICN",
@@ -29774,6 +29750,18 @@
           "arrival_name": "뉴욕/존 F. 케네디, NY, 미국",
           "flight_number": "KE081",
           "departure_time": "10:00",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260925",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "JFK",
+          "arrival_name": "뉴욕/존 F. 케네디, NY, 미국",
+          "flight_number": "KE085",
+          "departure_time": "19:30",
           "booking_class": "X",
           "front_class": "E",
           "available": true
@@ -38895,12 +38883,11 @@
       "destination": "SYD",
       "destination_name": "시드니",
       "month": "202609",
-      "total_seats": 15,
+      "total_seats": 14,
       "classes": [
         "X"
       ],
       "dates": [
-        "20260916",
         "20260917",
         "20260918",
         "20260919",
@@ -38917,18 +38904,6 @@
         "20260930"
       ],
       "sample_flights": [
-        {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "SYD",
-          "arrival_name": "시드니/킹즈퍼드 스미스, 호주",
-          "flight_number": "KE401",
-          "departure_time": "19:10",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
         {
           "date": "20260917",
           "departure": "ICN",
@@ -39027,6 +39002,18 @@
         },
         {
           "date": "20260925",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "SYD",
+          "arrival_name": "시드니/킹즈퍼드 스미스, 호주",
+          "flight_number": "KE401",
+          "departure_time": "19:10",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260926",
           "departure": "ICN",
           "departure_name": "서울/인천, 대한민국",
           "arrival": "SYD",
@@ -42637,7 +42624,7 @@
           "departure_time": "18:35",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -42649,7 +42636,7 @@
           "departure_time": "18:35",
           "booking_class": "O",
           "front_class": "P",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -42661,7 +42648,7 @@
           "departure_time": "18:35",
           "booking_class": "Z",
           "front_class": "U",
-          "available": true
+          "available": false
         },
         {
           "date": "20260917",
@@ -98217,7 +98204,7 @@
           "departure_time": "20:30",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -98229,7 +98216,7 @@
           "departure_time": "20:30",
           "booking_class": "O",
           "front_class": "P",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -98241,7 +98228,7 @@
           "departure_time": "20:30",
           "booking_class": "Z",
           "front_class": "U",
-          "available": true
+          "available": false
         },
         {
           "date": "20260917",
@@ -111041,7 +111028,7 @@
           "departure_time": "18:45",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -111077,7 +111064,7 @@
           "departure_time": "20:50",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -167641,7 +167628,7 @@
           "departure_time": "18:35",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -246733,7 +246720,7 @@
           "departure_time": "19:45",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -246745,7 +246732,7 @@
           "departure_time": "19:45",
           "booking_class": "O",
           "front_class": "P",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -246757,7 +246744,7 @@
           "departure_time": "19:45",
           "booking_class": "Z",
           "front_class": "U",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -246769,7 +246756,7 @@
           "departure_time": "21:15",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -246781,7 +246768,7 @@
           "departure_time": "21:15",
           "booking_class": "O",
           "front_class": "P",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -246793,7 +246780,7 @@
           "departure_time": "21:15",
           "booking_class": "Z",
           "front_class": "U",
-          "available": true
+          "available": false
         },
         {
           "date": "20260917",
@@ -291789,7 +291776,7 @@
           "departure_time": "20:30",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260917",
@@ -317369,7 +317356,7 @@
           "departure_time": "18:40",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -317381,7 +317368,7 @@
           "departure_time": "18:40",
           "booking_class": "O",
           "front_class": "P",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -317393,7 +317380,7 @@
           "departure_time": "18:40",
           "booking_class": "Z",
           "front_class": "U",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -386589,7 +386576,7 @@
           "departure_time": "18:25",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -386601,7 +386588,7 @@
           "departure_time": "18:25",
           "booking_class": "O",
           "front_class": "P",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -386613,7 +386600,7 @@
           "departure_time": "18:25",
           "booking_class": "Z",
           "front_class": "U",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -386625,7 +386612,7 @@
           "departure_time": "19:45",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260917",
@@ -412385,7 +412372,7 @@
           "departure_time": "22:40",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260917",
@@ -438181,7 +438168,7 @@
           "departure_time": "19:45",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -438193,7 +438180,7 @@
           "departure_time": "19:45",
           "booking_class": "O",
           "front_class": "P",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -438205,7 +438192,7 @@
           "departure_time": "19:45",
           "booking_class": "Z",
           "front_class": "U",
-          "available": true
+          "available": false
         },
         {
           "date": "20260917",
@@ -475989,7 +475976,7 @@
           "departure_time": "22:35",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -499721,7 +499708,7 @@
           "departure_time": "19:40",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -533425,7 +533412,7 @@
           "departure_time": "19:30",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -533449,7 +533436,7 @@
           "departure_time": "19:30",
           "booking_class": "Z",
           "front_class": "U",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -627156,7 +627143,7 @@
           "departure_time": "19:10",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
