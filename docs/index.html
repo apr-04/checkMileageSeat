@@ -295,30 +295,76 @@
 
   <!-- Refresh Modal -->
   <div id="modal-refresh" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4">
       <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-        <h3 class="font-bold text-slate-800 text-base">GitHub Actions 즉시 새로고침</h3>
+        <div>
+          <h3 class="font-bold text-slate-800 text-base flex items-center">
+            <i class="fa-solid fa-rotate text-kal-blue mr-2"></i> 좌석 데이터 갱신 안내
+          </h3>
+          <p class="text-[11px] text-slate-500 mt-0.5">최신 마일리지 좌석 데이터를 갱신하는 2가지 방법입니다.</p>
+        </div>
         <button onclick="closeRefreshModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
-      <p class="text-xs text-slate-600 leading-relaxed">
-        GitHub Actions 워크플로우를 실행하여 지금 즉시 대한항공 마일리지 좌석을 다시 스캔할 수 있습니다.
-      </p>
-      <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">GitHub 저장소 (예: username/repo)</label>
-        <input type="text" id="gh-repo" placeholder="username/repository-name" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono">
+
+      <!-- Auto Update Info -->
+      <div class="bg-blue-50/70 border border-blue-100 rounded-xl p-3 text-xs text-blue-900 space-y-1">
+        <div class="font-bold flex items-center">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
+          자동 갱신 주기: 매 30분마다 자동 실행
+        </div>
+        <p class="text-[11px] text-blue-700 leading-relaxed">
+          수동으로 새로고침하지 않아도 GitHub Actions가 <b>매 30분마다</b> 대한항공 전체 노선을 자동 검사하여 웹사이트 데이터를 갱신하고, 새로운 빈 좌석 발견 시 텔레그램으로 알림을 보냅니다.
+        </p>
       </div>
-      <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">GitHub Personal Access Token (PAT) (선택)</label>
-        <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxx" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono">
-        <span class="text-[11px] text-slate-400 mt-0.5 block">토큰이 없으시면 GitHub 저장소의 Actions 탭에서 [Run workflow]를 클릭하셔도 됩니다.</span>
+
+      <!-- Option 1: Tokenless One-Click (Recommended) -->
+      <div class="border border-emerald-200 bg-emerald-50/50 rounded-xl p-4 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-black text-emerald-800 bg-emerald-200/80 px-2 py-0.5 rounded">방법 1 • 추천 (토큰 불필요)</span>
+          <span class="text-[11px] text-emerald-700 font-semibold">소요 시간: 3초</span>
+        </div>
+        <h4 class="font-bold text-slate-800 text-sm">GitHub 웹에서 [Run workflow] 원클릭 실행</h4>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          GitHub에 로그인되어 있으시면, 별도의 복잡한 Personal Access Token 발급 없이 <b>아래 버튼을 누른 후 [Run workflow] 파란색 버튼만 클릭</b>하시면 즉시 좌석 조회가 시작됩니다!
+        </p>
+        <a href="https://github.com/apr-04/checkMileageSeat/actions/workflows/seat_monitor.yml" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-lg text-xs flex items-center justify-center space-x-2 shadow transition mt-2">
+          <i class="fa-brands fa-github text-sm"></i>
+          <span>GitHub Actions 실행 페이지로 바로가기 ➔</span>
+        </a>
       </div>
-      <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
-        <button onclick="closeRefreshModal()" class="px-3 py-1.5 text-xs text-slate-600">취소</button>
-        <button onclick="triggerGitHubAction()" class="bg-kal-blue hover:bg-blue-600 text-white font-bold px-4 py-1.5 rounded-lg text-xs shadow">
-          새로고침 요청
-        </button>
+
+      <!-- Option 2: Local PC Execution -->
+      <div class="border border-slate-200 bg-slate-50/60 rounded-xl p-3.5 space-y-1 text-xs text-slate-700">
+        <div class="font-bold text-slate-800 flex items-center">
+          <i class="fa-solid fa-laptop text-slate-500 mr-1.5"></i> 방법 2 • 내 컴퓨터에서 실시간 조회 (토큰 불필요)
+        </div>
+        <p class="text-[11px] text-slate-600 leading-relaxed">
+          프로젝트 폴더의 <code>run_web.bat</code>을 실행하시면 내 컴퓨터에서 직접 대한항공 API를 실시간 조회하므로 대기 시간 없이 즉시 최신 결과를 확인하실 수 있습니다.
+        </p>
       </div>
-      <div id="refresh-status" class="hidden text-xs p-2.5 rounded bg-blue-50 text-blue-700"></div>
+
+      <!-- Option 3 (Advanced): GitHub PAT in Browser (Collapsed) -->
+      <details class="text-xs text-slate-500 border border-slate-100 rounded-lg p-2.5">
+        <summary class="cursor-pointer font-semibold text-slate-600 hover:text-slate-800">고급: 브라우저에서 토큰(PAT)으로 직접 트리거하기</summary>
+        <div class="mt-3 space-y-2 pt-2 border-t border-slate-100">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-0.5">저장소</label>
+            <input type="text" id="gh-repo" value="apr-04/checkMileageSeat" class="w-full bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-xs font-mono">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-0.5">GitHub Personal Access Token (PAT)</label>
+            <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxx" class="w-full bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-xs font-mono">
+          </div>
+          <button onclick="triggerGitHubAction()" class="bg-kal-blue hover:bg-blue-600 text-white font-bold px-3 py-1.5 rounded text-xs shadow">
+            토큰으로 워크플로우 실행
+          </button>
+          <div id="refresh-status" class="hidden text-xs p-2 rounded bg-blue-50 text-blue-700 mt-1"></div>
+        </div>
+      </details>
+
+      <div class="flex justify-end pt-1">
+        <button onclick="closeRefreshModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-1.5 rounded-lg text-xs">닫기</button>
+      </div>
     </div>
   </div>
 
