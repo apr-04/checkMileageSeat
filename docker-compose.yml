@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  kal-mileage-app:
+    build: .
+    container_name: kal-mileage-monitor
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      # 설정 및 캐시 영구 보존
+      - ./config.json:/app/config.json
+      - ./data:/app/data
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}

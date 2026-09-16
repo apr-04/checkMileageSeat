@@ -1,0 +1,29 @@
+{
+  "telegram": {
+    "enabled": false,
+    "bot_token": "YOUR_TELEGRAM_BOT_TOKEN_HERE",
+    "chat_id": "YOUR_TELEGRAM_CHAT_ID_HERE"
+  },
+  "monitoring": {
+    "check_interval_minutes": 15,
+    "notify_on_all_available_on_start": false
+  },
+  "routes": [
+    {
+      "departure": "ICN",
+      "departure_name": "서울/인천",
+      "arrival": "NRT",
+      "arrival_name": "도쿄/나리타",
+      "months": ["202610", "202611"],
+      "seat_classes": ["X", "O", "A", "Z"]
+    },
+    {
+      "departure": "ICN",
+      "departure_name": "서울/인천",
+      "arrival": "CDG",
+      "arrival_name": "파리/샤를드골",
+      "months": ["202611"],
+      "seat_classes": ["X", "O", "A"]
+    }
+  ]
+}

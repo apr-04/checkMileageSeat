@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+SMS/
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+
+# Configuration with personal Bot Token / Chat ID
+config.json
+
+# Local runtime data & cache
+data/*.json
+!data/.gitkeep
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Logs & OS generated files
+*.log
+.DS_Store
+Thumbs.db
+*.png
+captured_apis.json
+captured_search_apis.json

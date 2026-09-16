@@ -1,0 +1,76 @@
+name: KAL Award Seat Periodic Monitor
+
+on:
+  schedule:
+    # 매 30분마다 자동 실행 (UTC 기준)
+    - cron: '*/30 * * * *'
+  # GitHub 웹사이트에서 언제든 [Run workflow] 버튼으로 즉시 실행 가능
+  workflow_dispatch:
+    inputs:
+      notify_all:
+        description: '신규 여부와 관계없이 현재 발견된 모든 좌석 강제 알림'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  check-seats:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Google Chrome & Playwright browsers
+        run: |
+          # Install Google Chrome on Ubuntu
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          # Install Playwright dependencies
+          python -m playwright install --with-deps chromium
+
+      - name: Restore seat cache (to prevent duplicate alerts)
+        uses: actions/cache@v4
+        with:
+          path: data/seat_cache.json
+          key: seat-cache-${{ github.run_id }}
+          restore-keys: |
+            seat-cache-
+
+      - name: Prepare config file
+        run: |
+          if [ ! -f config.json ]; then
+            cp config.example.json config.json
+          fi
+
+      - name: Run Award Seat Check
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ "${{ github.event.inputs.notify_all }}" = "true" ]; then
+            python src/monitor.py --once --notify-all
+          else
+            python src/monitor.py --once
+          fi
+
+      - name: Save updated seat cache
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: data/seat_cache.json
+          key: seat-cache-${{ github.run_id }}

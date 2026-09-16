@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>대한항공 마일리지 빈좌석 알리미 & 목적지 탐색기</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            kal: {
+              blue: '#0064d2',
+              navy: '#00256c',
+              sky: '#00a3e0',
+              light: '#f0f7fc'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif; }
+    .tab-active { border-bottom: 3px solid #0064d2; color: #0064d2; font-weight: 700; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <!-- Top Navbar -->
+  <header class="bg-kal-navy text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="bg-white text-kal-navy p-2 rounded-lg font-black text-xl tracking-wider">
+          <i class="fa-solid fa-plane-departure text-kal-blue"></i> KAL
+        </div>
+        <div>
+          <h1 class="text-lg font-bold">대한항공 마일리지 빈좌석 알리미</h1>
+          <p class="text-xs text-slate-300">SKYPASS Award Seat Finder & Destination Explorer</p>
+        </div>
+      </div>
+
+      <!-- Monitor Status Widget -->
+      <div class="flex items-center space-x-4">
+        <div id="monitor-badge" class="flex items-center space-x-2 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700 text-sm">
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-gray-400" id="status-dot"></span>
+          <span id="status-text" class="text-xs text-slate-300">상태 확인 중...</span>
+        </div>
+        <button id="btn-toggle-monitor" onclick="toggleMonitor()" class="bg-kal-blue hover:bg-blue-600 text-white text-sm font-semibold px-4 py-1.5 rounded-lg transition shadow">
+          <i class="fa-solid fa-play mr-1"></i> 감시 시작
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 flex space-x-6 text-sm font-medium overflow-x-auto">
+      <button onclick="switchTab('explore')" id="tab-explore" class="py-3 px-2 tab-active transition flex items-center space-x-2 whitespace-nowrap">
+        <i class="fa-solid fa-earth-americas text-emerald-600"></i> <span>🌍 어디로 갈까? 빈좌석 목적지 탐색</span>
+      </button>
+      <button onclick="switchTab('search')" id="tab-search" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition flex items-center space-x-2 whitespace-nowrap">
+        <i class="fa-solid fa-magnifying-glass"></i> <span>특정 노선 실시간 조회</span>
+      </button>
+      <button onclick="switchTab('routes')" id="tab-routes" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition flex items-center space-x-2 whitespace-nowrap">
+        <i class="fa-solid fa-route"></i> <span>자동 감시 노선 설정</span>
+      </button>
+      <button onclick="switchTab('telegram')" id="tab-telegram" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition flex items-center space-x-2 whitespace-nowrap">
+        <i class="fa-brands fa-telegram text-sky-500 text-base"></i> <span>텔레그램 알림 설정</span>
+      </button>
+      <button onclick="switchTab('logs')" id="tab-logs" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition flex items-center space-x-2 whitespace-nowrap">
+        <i class="fa-solid fa-clock-rotate-left"></i> <span>감시 활동 로그</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- TAB 1: Destination Explorer (NEW!) -->
+    <div id="view-explore" class="space-y-6">
+      <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-2xl p-6 shadow-md">
+        <div class="max-w-3xl">
+          <span class="bg-emerald-500 text-white text-xs font-black uppercase px-2.5 py-1 rounded-full tracking-wide">Anywhere Explorer</span>
+          <h2 class="text-2xl font-black mt-2">휴가 시기에 마일리지 좌석 남아있는 여행지 찾기</h2>
+          <p class="text-sm text-slate-200 mt-1">원하는 여행 월과 좌석 등급(프레스티지/일등석/일반석)을 선택하시면, 대한항공 주요 취항지를 스캔하여 <b>지금 예약 가능한 목적지와 날짜 목록</b>을 한눈에 보여드립니다.</p>
+        </div>
+
+        <!-- Filter Box inside Hero -->
+        <div class="mt-6 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 grid grid-cols-1 md:grid-cols-4 gap-4 text-slate-800">
+          <!-- Departure -->
+          <div>
+            <label class="block text-xs font-bold text-slate-200 uppercase mb-1">출발지 (Departure)</label>
+            <select id="explore-dep" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none">
+              <option value="ICN" selected>서울/인천 (ICN)</option>
+              <option value="GMP">서울/김포 (GMP)</option>
+              <option value="PUS">부산/김해 (PUS)</option>
+            </select>
+          </div>
+
+          <!-- Month -->
+          <div>
+            <label class="block text-xs font-bold text-slate-200 uppercase mb-1">여행 시기 (Month)</label>
+            <select id="explore-month" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none">
+              <!-- populated by JS -->
+            </select>
+          </div>
+
+          <!-- Region -->
+          <div>
+            <label class="block text-xs font-bold text-slate-200 uppercase mb-1">지역 (Region)</label>
+            <select id="explore-region" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none">
+              <option value="ALL">🌐 전 세계 전체</option>
+              <option value="JAPAN">🇯🇵 일본 (도쿄/오사카/후쿠오카/삿포로)</option>
+              <option value="SOUTHEAST_ASIA">🌴 동남아/휴양지 (방콕/다낭/싱가포르/발리)</option>
+              <option value="AMERICA">🇺🇸 미주/하와이/괌 (호놀룰루/뉴욕/LA/괌)</option>
+              <option value="EUROPE">🇪🇺 유럽 (파리/런던/로마/바르셀로나)</option>
+              <option value="OCEANIA">🌊 대양주 (시드니/오클랜드)</option>
+            </select>
+          </div>
+
+          <!-- Action Button -->
+          <div class="flex items-end">
+            <button onclick="executeExplore()" id="btn-explore" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-lg transition shadow-lg flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-compass"></i> <span>목적지 일괄 탐색</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Class Filter -->
+        <div class="mt-3 flex flex-wrap items-center gap-4 text-xs font-medium text-slate-200">
+          <span class="text-slate-300 font-bold">포함할 좌석 등급:</span>
+          <label class="inline-flex items-center space-x-1.5 cursor-pointer bg-white/10 px-2.5 py-1 rounded-lg hover:bg-white/20">
+            <input type="checkbox" id="exp-class-O" value="O" checked class="rounded text-emerald-500">
+            <span class="font-bold text-emerald-300">프레스티지 (O)</span>
+          </label>
+          <label class="inline-flex items-center space-x-1.5 cursor-pointer bg-white/10 px-2.5 py-1 rounded-lg hover:bg-white/20">
+            <input type="checkbox" id="exp-class-A" value="A" checked class="rounded text-amber-500">
+            <span class="font-bold text-amber-300">일등석 (A)</span>
+          </label>
+          <label class="inline-flex items-center space-x-1.5 cursor-pointer bg-white/10 px-2.5 py-1 rounded-lg hover:bg-white/20">
+            <input type="checkbox" id="exp-class-X" value="X" checked class="rounded text-blue-400">
+            <span>일반석 (X)</span>
+          </label>
+          <label class="inline-flex items-center space-x-1.5 cursor-pointer bg-white/10 px-2.5 py-1 rounded-lg hover:bg-white/20">
+            <input type="checkbox" id="exp-class-Z" value="Z" checked class="rounded text-blue-400">
+            <span>프레스티지 승급 (Z)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="explore-loading" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-slate-200 border-t-emerald-500 mb-4"></div>
+        <p class="text-lg font-bold text-slate-800" id="explore-loading-text">선택하신 지역의 목적지들을 고속 스캔하고 있습니다...</p>
+        <p class="text-xs text-slate-500 mt-1">대한항공 보안 세션을 통해 각 도시별 보너스 좌석 잔여 여부를 확인 중입니다 (목적지 수에 따라 5~15초 소요)</p>
+      </div>
+
+      <!-- Explore Results Container -->
+      <div id="explore-results-box" class="hidden space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 id="explore-results-title" class="text-lg font-black text-slate-800"></h3>
+            <p id="explore-results-subtitle" class="text-xs text-slate-500"></p>
+          </div>
+          <div class="text-sm font-semibold bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-full" id="explore-badge-count"></div>
+        </div>
+
+        <!-- Destination Cards Grid -->
+        <div id="destinations-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Instant Search (Specific Route) -->
+    <div id="view-search" class="hidden space-y-6">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center">
+          <i class="fa-solid fa-magnifying-glass text-kal-blue mr-2"></i> 특정 노선 실시간 보너스 좌석 검색
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">출발지 (From)</label>
+            <select id="search-dep" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-kal-blue focus:outline-none"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">도착지 (To)</label>
+            <select id="search-arr" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-kal-blue focus:outline-none"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">탑승월 (Month)</label>
+            <select id="search-month" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-kal-blue focus:outline-none"></select>
+          </div>
+          <div class="flex items-end">
+            <button onclick="executeInstantSearch()" id="btn-search" class="w-full bg-kal-navy hover:bg-blue-950 text-white font-bold py-2 px-4 rounded-lg transition shadow flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-search"></i> <span>좌석 조회하기</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-100 flex flex-wrap items-center gap-4 text-sm">
+          <span class="text-xs font-semibold text-slate-500">좌석 등급:</span>
+          <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+            <input type="checkbox" id="class-X" value="X" checked class="rounded text-kal-blue focus:ring-kal-blue">
+            <span class="font-medium text-slate-700">일반석 (X)</span>
+          </label>
+          <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+            <input type="checkbox" id="class-O" value="O" checked class="rounded text-kal-blue focus:ring-kal-blue">
+            <span class="font-medium text-slate-700">프레스티지 (O)</span>
+          </label>
+          <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+            <input type="checkbox" id="class-A" value="A" checked class="rounded text-kal-blue focus:ring-kal-blue">
+            <span class="font-medium text-slate-700">일등석 (A)</span>
+          </label>
+          <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+            <input type="checkbox" id="class-Z" value="Z" checked class="rounded text-kal-blue focus:ring-kal-blue">
+            <span class="font-medium text-slate-700">프레스티지 좌석승급 (Z)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Search Results Area -->
+      <div id="search-results-box" class="hidden space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 id="results-title" class="text-lg font-bold text-slate-800"></h3>
+          <div class="flex items-center space-x-2">
+            <span class="inline-block w-3 h-3 bg-green-500 rounded-full"></span>
+            <span class="text-xs font-semibold text-slate-600">예약 가능 좌석</span>
+            <span class="inline-block w-3 h-3 bg-slate-300 rounded-full ml-3"></span>
+            <span class="text-xs font-semibold text-slate-400">매진</span>
+          </div>
+        </div>
+
+        <div id="available-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+            <h4 class="font-bold text-sm text-slate-700">전체 일자별 항공편 상세 내역</h4>
+            <span id="results-count-badge" class="text-xs font-semibold bg-blue-100 text-kal-blue px-2.5 py-1 rounded-full"></span>
+          </div>
+          <div class="overflow-x-auto max-h-96">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-100 text-slate-600 text-xs uppercase sticky top-0">
+                <tr>
+                  <th class="py-2.5 px-4">탑승일자</th>
+                  <th class="py-2.5 px-4">편명</th>
+                  <th class="py-2.5 px-4">출발시각</th>
+                  <th class="py-2.5 px-4">좌석 클래스</th>
+                  <th class="py-2.5 px-4">예약 가능 여부</th>
+                </tr>
+              </thead>
+              <tbody id="results-tbody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="search-loading" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
+        <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-kal-blue mb-4"></div>
+        <p class="text-base font-bold text-slate-800">대한항공 서버에서 실시간 보너스 좌석을 조회하고 있습니다...</p>
+      </div>
+    </div>
+
+    <!-- TAB 3: Monitoring Routes -->
+    <div id="view-routes" class="hidden space-y-6">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-800 flex items-center">
+              <i class="fa-solid fa-route text-kal-blue mr-2"></i> 자동 감시 노선 목록
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">설정된 주기마다 이 노선들의 빈 좌석 및 취소표 발생 여부를 자동으로 검사합니다.</p>
+          </div>
+          <button onclick="openAddRouteModal()" class="bg-kal-blue hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition shadow flex items-center space-x-1.5">
+            <i class="fa-solid fa-plus"></i> <span>새 노선 추가</span>
+          </button>
+        </div>
+
+        <div class="mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-stopwatch text-slate-500 text-lg"></i>
+            <div>
+              <span class="text-sm font-bold text-slate-700">모니터링 주기:</span>
+              <p class="text-xs text-slate-500">자동 검사를 반복할 시간 간격을 설정합니다.</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <select id="setting-interval" onchange="saveIntervalSetting()" class="bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-semibold focus:outline-none">
+              <option value="5">5분마다</option>
+              <option value="10">10분마다</option>
+              <option value="15" selected>15분마다 (권장)</option>
+              <option value="30">30분마다</option>
+              <option value="60">1시간마다</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="routes-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: Telegram Settings -->
+    <div id="view-telegram" class="hidden space-y-6">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center">
+          <i class="fa-brands fa-telegram text-sky-500 mr-2 text-xl"></i> 텔레그램 알림 연동
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="md:col-span-2 space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">텔레그램 봇 토큰 (Bot Token)</label>
+              <input type="text" id="tg-token" placeholder="예: 7123456789:AAFn_XXXX..." class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-kal-blue focus:outline-none">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">수신자 챗 ID (Chat ID)</label>
+              <input type="text" id="tg-chat-id" placeholder="예: 123456789 또는 -100XXXXXXXX" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-kal-blue focus:outline-none">
+            </div>
+
+            <div class="flex items-center space-x-2 pt-2">
+              <input type="checkbox" id="tg-enabled" class="rounded text-kal-blue focus:ring-kal-blue w-4 h-4">
+              <label for="tg-enabled" class="text-sm font-semibold text-slate-700 cursor-pointer">텔레그램 알림 사용 활성화</label>
+            </div>
+
+            <div class="pt-4 flex items-center space-x-3">
+              <button onclick="saveTelegramSettings()" class="bg-kal-navy hover:bg-blue-950 text-white font-bold py-2 px-5 rounded-lg text-sm transition shadow">
+                설정 저장
+              </button>
+              <button onclick="testTelegramConnection()" id="btn-test-tg" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg text-sm transition border border-slate-300 flex items-center space-x-1.5">
+                <i class="fa-solid fa-paper-plane text-sky-600"></i> <span>연결 테스트 및 알림 발송</span>
+              </button>
+            </div>
+            
+            <div id="tg-test-result" class="hidden p-3 rounded-lg text-sm mt-3"></div>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-600 space-y-3">
+            <h4 class="font-bold text-slate-800 text-sm flex items-center">
+              <i class="fa-solid fa-circle-question text-kal-blue mr-1.5"></i> 텔레그램 봇 1분 생성 안내
+            </h4>
+            <ol class="list-decimal list-inside space-y-1.5 leading-relaxed">
+              <li>텔레그램 앱에서 <b>@BotFather</b> 검색 후 대화 시작</li>
+              <li><code>/newbot</code> 입력 후 봇 이름 및 아이디 지정</li>
+              <li>발급되는 <b>HTTP API 토큰</b>을 위 입력창에 복사</li>
+              <li>내가 만든 봇에게 <b>/start</b> 메시지 1회 전송</li>
+              <li>내 <b>Chat ID</b>는 텔레그램에서 <b>@userinfobot</b> 검색 후 대화를 걸면 즉시 확인 가능!</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: Live Logs -->
+    <div id="view-logs" class="hidden space-y-4">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-800 flex items-center">
+            <i class="fa-solid fa-terminal text-slate-600 mr-2"></i> 실시간 모니터링 활동 로그
+          </h2>
+          <button onclick="fetchStatus()" class="text-xs text-kal-blue hover:underline">
+            <i class="fa-solid fa-rotate-right mr-1"></i> 새로고침
+          </button>
+        </div>
+        <div id="log-terminal" class="bg-slate-900 text-green-400 font-mono text-xs p-4 rounded-lg h-96 overflow-y-auto space-y-1 leading-relaxed"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Destination Flight Details Modal -->
+  <div id="modal-dest-detail" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[85vh] flex flex-col">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div>
+          <h3 id="modal-detail-title" class="font-black text-slate-800 text-lg"></h3>
+          <p id="modal-detail-subtitle" class="text-xs text-slate-500"></p>
+        </div>
+        <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto flex-1 pr-1">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-100 text-slate-600 text-xs uppercase sticky top-0">
+            <tr>
+              <th class="py-2 px-3">탑승일자</th>
+              <th class="py-2 px-3">편명</th>
+              <th class="py-2 px-3">출발시각</th>
+              <th class="py-2 px-3">좌석 클래스</th>
+              <th class="py-2 px-3 text-right">예매</th>
+            </tr>
+          </thead>
+          <tbody id="modal-detail-tbody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
+        <a href="https://www.koreanair.com/booking/search?bookingType=A&gnb=true" target="_blank" class="text-xs font-bold text-kal-blue hover:underline">
+          대한항공 마일리지 예매 페이지 열기 ➔
+        </a>
+        <button onclick="closeDetailModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-sm">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Route Modal -->
+  <div id="modal-add-route" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-800 text-base">새 감시 노선 추가</h3>
+        <button onclick="closeAddRouteModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">출발 공항</label>
+          <select id="modal-dep" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none"></select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">도착 공항</label>
+          <select id="modal-arr" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none"></select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">감시 대상 월</label>
+          <div id="modal-months-container" class="grid grid-cols-3 gap-2 max-h-36 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-lg"></div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">감시할 좌석 등급</label>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <label class="inline-flex items-center space-x-1.5"><input type="checkbox" id="modal-class-X" value="X" checked class="rounded text-kal-blue"> <span>일반석 (X)</span></label>
+            <label class="inline-flex items-center space-x-1.5"><input type="checkbox" id="modal-class-O" value="O" checked class="rounded text-kal-blue"> <span>프레스티지 (O)</span></label>
+            <label class="inline-flex items-center space-x-1.5"><input type="checkbox" id="modal-class-A" value="A" checked class="rounded text-kal-blue"> <span>일등석 (A)</span></label>
+            <label class="inline-flex items-center space-x-1.5"><input type="checkbox" id="modal-class-Z" value="Z" checked class="rounded text-kal-blue"> <span>좌석승급 (Z)</span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+        <button onclick="closeAddRouteModal()" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">취소</button>
+        <button onclick="submitAddRoute()" class="px-4 py-2 text-sm bg-kal-blue hover:bg-blue-600 text-white font-bold rounded-lg shadow">추가하기</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentConfig = null;
+    let airportMap = {};
+    let currentExploreData = [];
+    const CLASS_LABELS = {
+      "X": "일반석",
+      "O": "프레스티지",
+      "A": "일등석",
+      "Z": "좌석승급",
+      "W": "프리미엄",
+      "G": "프리미엄승급"
+    };
+
+    function switchTab(tabId) {
+      ['explore', 'search', 'routes', 'telegram', 'logs'].forEach(t => {
+        document.getElementById(`view-${t}`).classList.add('hidden');
+        document.getElementById(`tab-${t}`).classList.remove('tab-active');
+        document.getElementById(`tab-${t}`).classList.add('text-slate-500');
+      });
+      document.getElementById(`view-${tabId}`).classList.remove('hidden');
+      document.getElementById(`tab-${tabId}`).classList.add('tab-active');
+      document.getElementById(`tab-${tabId}`).classList.remove('text-slate-500');
+    }
+
+    function generateMonthsList() {
+      const list = [];
+      const now = new Date();
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        list.push({ ym: `${y}${m}`, label: `${y}년 ${m}월` });
+      }
+      return list;
+    }
+
+    async function initPage() {
+      const airRes = await fetch('/api/airports');
+      airportMap = await airRes.json();
+      
+      const depSelect = document.getElementById('search-dep');
+      const arrSelect = document.getElementById('search-arr');
+      const mDepSelect = document.getElementById('modal-dep');
+      const mArrSelect = document.getElementById('modal-arr');
+
+      depSelect.innerHTML = '';
+      arrSelect.innerHTML = '';
+      mDepSelect.innerHTML = '';
+      mArrSelect.innerHTML = '';
+
+      for (const [code, name] of Object.entries(airportMap)) {
+        depSelect.add(new Option(`${name} (${code})`, code));
+        arrSelect.add(new Option(`${name} (${code})`, code));
+        mDepSelect.add(new Option(`${name} (${code})`, code));
+        mArrSelect.add(new Option(`${name} (${code})`, code));
+      }
+      depSelect.value = 'ICN';
+      arrSelect.value = 'NRT';
+      mDepSelect.value = 'ICN';
+      mArrSelect.value = 'NRT';
+
+      // Populate Months for Explore & Search
+      const months = generateMonthsList();
+      const monthSelect = document.getElementById('search-month');
+      const expMonthSelect = document.getElementById('explore-month');
+      const modalMonthsCont = document.getElementById('modal-months-container');
+      monthSelect.innerHTML = '';
+      expMonthSelect.innerHTML = '';
+      modalMonthsCont.innerHTML = '';
+
+      months.forEach((m, idx) => {
+        monthSelect.add(new Option(m.label, m.ym));
+        expMonthSelect.add(new Option(m.label, m.ym));
+        modalMonthsCont.innerHTML += `
+          <label class="inline-flex items-center space-x-1 text-xs cursor-pointer">
+            <input type="checkbox" name="modal-month" value="${m.ym}" ${idx < 2 ? 'checked' : ''} class="rounded text-kal-blue">
+            <span>${m.label.replace('202', "'2")}</span>
+          </label>
+        `;
+      });
+
+      await loadConfigData();
+      fetchStatus();
+      setInterval(fetchStatus, 4000);
+    }
+
+    async function loadConfigData() {
+      const res = await fetch('/api/config');
+      currentConfig = await res.json();
+
+      const tg = currentConfig.telegram || {};
+      document.getElementById('tg-token').value = tg.bot_token || '';
+      document.getElementById('tg-chat-id').value = tg.chat_id || '';
+      document.getElementById('tg-enabled').checked = !!tg.enabled;
+
+      const interval = currentConfig.monitoring?.check_interval_minutes || 15;
+      document.getElementById('setting-interval').value = interval;
+
+      renderRoutesList();
+    }
+
+    // ==========================================
+    // DESTINATION EXPLORER LOGIC (NEW!)
+    // ==========================================
+    async function executeExplore() {
+      const dep = document.getElementById('explore-dep').value;
+      const month = document.getElementById('explore-month').value;
+      const region = document.getElementById('explore-region').value;
+      const classes = ['X', 'O', 'A', 'Z'].filter(c => document.getElementById(`exp-class-${c}`).checked);
+
+      if (classes.length === 0) {
+        alert('최소 1개 이상의 좌석 등급을 선택하세요.');
+        return;
+      }
+
+      document.getElementById('explore-results-box').classList.add('hidden');
+      document.getElementById('explore-loading').classList.remove('hidden');
+
+      try {
+        const res = await fetch('/api/explore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ departure: dep, month: month, region: region, seat_classes: classes })
+        });
+        const respData = await res.json();
+        document.getElementById('explore-loading').classList.add('hidden');
+
+        if (!respData.success) {
+          alert(`탐색 오류: ${respData.message}`);
+          return;
+        }
+
+        currentExploreData = respData.data;
+        renderExploreResults(respData, dep, month);
+      } catch (e) {
+        document.getElementById('explore-loading').classList.add('hidden');
+        alert(`네트워크 통신 오류: ${e}`);
+      }
+    }
+
+    function renderExploreResults(respData, dep, month) {
+      document.getElementById('explore-results-box').classList.remove('hidden');
+      const mStr = `${month.substring(0,4)}년 ${month.substring(4)}월`;
+      document.getElementById('explore-results-title').innerText = `${airportMap[dep] || dep} 출발 ➔ ${mStr} 빈좌석이 있는 목적지`;
+      document.getElementById('explore-results-subtitle').innerText = `스캔한 ${respData.scanned_count}개 목적지 중 현재 ${respData.found_count}개 도시에서 마일리지 예약이 가능합니다.`;
+      document.getElementById('explore-badge-count').innerText = `${respData.found_count}개 목적지 발견`;
+
+      const grid = document.getElementById('destinations-grid');
+      grid.innerHTML = '';
+
+      if (respData.data.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-3 text-center py-12 bg-white rounded-2xl border border-slate-200 p-8 text-slate-500">
+            <i class="fa-regular fa-face-frown text-4xl text-slate-300 mb-3"></i>
+            <p class="font-bold text-slate-700">해당 조건으로 예약 가능한 목적지가 없습니다.</p>
+            <p class="text-xs text-slate-400 mt-1">다른 월을 선택하시거나 일반석(X) 등급을 포함하여 다시 탐색해 보세요.</p>
+          </div>
+        `;
+        return;
+      }
+
+      respData.data.forEach((item, idx) => {
+        const hasPrestige = item.available_classes.includes('O');
+        const hasFirst = item.available_classes.includes('A');
+        
+        let badgeClass = 'bg-blue-100 text-blue-800';
+        let badgeText = '일반석 가능';
+        if (hasFirst) {
+          badgeClass = 'bg-amber-100 text-amber-900 border border-amber-300 font-bold';
+          badgeText = '👑 일등석 가능';
+        } else if (hasPrestige) {
+          badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold';
+          badgeText = '✨ 프레스티지 가능';
+        }
+
+        // Available dates preview (first 5)
+        const dateBadges = item.available_dates.slice(0, 6).map(d => {
+          return `<span class="bg-slate-100 text-slate-700 text-xs px-2 py-0.5 rounded font-mono">${d.substring(4,6)}/${d.substring(6)}</span>`;
+        }).join(' ');
+
+        const moreCount = item.available_dates.length > 6 ? `<span class="text-xs text-slate-400 font-medium">+${item.available_dates.length - 6}일 더</span>` : '';
+
+        grid.innerHTML += `
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 hover:shadow-md hover:border-kal-blue transition flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h4 class="font-black text-slate-800 text-lg">${item.destination_name}</h4>
+                  <span class="text-xs font-mono font-bold text-kal-blue bg-blue-50 px-2 py-0.5 rounded">${item.destination}</span>
+                </div>
+                <span class="text-xs px-2.5 py-1 rounded-full ${badgeClass}">${badgeText}</span>
+              </div>
+
+              <div class="mt-3 text-xs text-slate-600 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-500 font-semibold">총 잔여 좌석 수:</span>
+                  <span class="font-black text-kal-navy text-sm">${item.total_available_seats}석</span>
+                </div>
+                <div>
+                  <span class="text-slate-500 font-semibold block mb-1">예약 가능 일자 (${item.available_dates.length}일):</span>
+                  <div class="flex flex-wrap gap-1 items-center">
+                    ${dateBadges} ${moreCount}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <button onclick="showDestinationDetail('${item.destination}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2 px-3 rounded-lg transition text-center">
+                <i class="fa-solid fa-list-ul mr-1"></i> 일정표 보기
+              </button>
+              <a href="https://www.koreanair.com/booking/search?bookingType=A&gnb=true" target="_blank" class="bg-kal-blue hover:bg-blue-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition text-center shadow-sm">
+                예매하기 ➔
+              </a>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function showDestinationDetail(destCode) {
+      const item = currentExploreData.find(d => d.destination === destCode);
+      if (!item) return;
+
+      document.getElementById('modal-detail-title').innerText = `${item.destination_name} (${destCode}) 잔여 보너스 좌석 상세`;
+      document.getElementById('modal-detail-subtitle').innerText = `총 ${item.all_flights.length}개의 예약 가능한 항공편이 있습니다.`;
+
+      const tbody = document.getElementById('modal-detail-tbody');
+      tbody.innerHTML = '';
+
+      item.all_flights.forEach(f => {
+        const dStr = `${f.date.substring(0,4)}-${f.date.substring(4,6)}-${f.date.substring(6)}`;
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="py-2.5 px-3 font-semibold text-slate-800">${dStr}</td>
+            <td class="py-2.5 px-3 font-bold text-kal-navy">${f.flight_number}</td>
+            <td class="py-2.5 px-3 text-slate-600">${f.departure_time || '-'}</td>
+            <td class="py-2.5 px-3 font-semibold text-emerald-700">${CLASS_LABELS[f.booking_class] || f.booking_class} (${f.booking_class})</td>
+            <td class="py-2.5 px-3 text-right">
+              <a href="https://www.koreanair.com/booking/search?bookingType=A&gnb=true" target="_blank" class="text-xs bg-kal-blue hover:bg-blue-600 text-white font-bold px-2 py-1 rounded">
+                예약
+              </a>
+            </td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('modal-dest-detail').classList.remove('hidden');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('modal-dest-detail').classList.add('hidden');
+    }
+
+    // ==========================================
+    // INSTANT SEARCH LOGIC
+    // ==========================================
+    async function executeInstantSearch() {
+      const dep = document.getElementById('search-dep').value;
+      const arr = document.getElementById('search-arr').value;
+      const month = document.getElementById('search-month').value;
+      const classes = ['X', 'O', 'A', 'Z'].filter(c => document.getElementById(`class-${c}`).checked);
+
+      if (dep === arr) {
+        alert('출발지와 도착지가 같을 수 없습니다.');
+        return;
+      }
+
+      document.getElementById('search-results-box').classList.add('hidden');
+      document.getElementById('search-loading').classList.remove('hidden');
+
+      try {
+        const res = await fetch('/api/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ departure: dep, arrival: arr, months: [month], seat_classes: classes })
+        });
+        const respData = await res.json();
+        document.getElementById('search-loading').classList.add('hidden');
+
+        if (!respData.success) {
+          alert(`조회 오류: ${respData.message}`);
+          return;
+        }
+
+        renderSearchResults(respData.data, dep, arr, month);
+      } catch (e) {
+        document.getElementById('search-loading').classList.add('hidden');
+        alert(`네트워크 통신 오류: ${e}`);
+      }
+    }
+
+    function renderSearchResults(data, dep, arr, month) {
+      document.getElementById('search-results-box').classList.remove('hidden');
+      document.getElementById('results-title').innerText = `${airportMap[dep] || dep} ➔ ${airportMap[arr] || arr} (${month.substring(0,4)}년 ${month.substring(4)}월 보너스 좌석 현황)`;
+
+      const tbody = document.getElementById('results-tbody');
+      const cards = document.getElementById('available-cards');
+      tbody.innerHTML = '';
+      cards.innerHTML = '';
+
+      const availableItems = data.filter(d => d.available);
+      document.getElementById('results-count-badge').innerText = `총 ${data.length}개 항목 중 예약 가능 ${availableItems.length}개`;
+
+      if (availableItems.length > 0) {
+        availableItems.slice(0, 3).forEach(item => {
+          const dStr = `${item.date.substring(4,6)}월 ${item.date.substring(6)}일`;
+          cards.innerHTML += `
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 shadow-sm">
+              <div class="flex justify-between items-center mb-1">
+                <span class="font-bold text-emerald-800 text-sm">${dStr} (${item.departure_time})</span>
+                <span class="text-xs bg-emerald-600 text-white font-bold px-2 py-0.5 rounded">${item.flight_number}</span>
+              </div>
+              <p class="text-xs text-emerald-700 font-semibold mt-1">예약 가능: ${CLASS_LABELS[item.booking_class] || item.booking_class} (${item.booking_class})</p>
+              <a href="https://www.koreanair.com/booking/search?bookingType=A&gnb=true" target="_blank" class="text-xs text-kal-blue hover:underline inline-block mt-2 font-bold">
+                대한항공 예매 ➔
+              </a>
+            </div>
+          `;
+        });
+      } else {
+        cards.innerHTML = `<div class="col-span-3 text-center py-4 text-slate-500 bg-slate-50 rounded-lg text-sm">해당 월에는 선택하신 조건의 잔여 보너스 좌석이 없습니다. (자동 감시를 등록해두시면 취소표 발생 시 알림을 받으실 수 있습니다)</div>`;
+      }
+
+      data.forEach(row => {
+        const dStr = `${row.date.substring(0,4)}-${row.date.substring(4,6)}-${row.date.substring(6)}`;
+        const isAvail = row.available;
+        const statusBadge = isAvail
+          ? `<span class="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full"><i class="fa-solid fa-check mr-1"></i>예약 가능</span>`
+          : `<span class="bg-slate-100 text-slate-400 text-xs font-medium px-2.5 py-1 rounded-full">매진</span>`;
+
+        tbody.innerHTML += `
+          <tr class="${isAvail ? 'bg-green-50/40 font-semibold' : 'hover:bg-slate-50'}">
+            <td class="py-2 px-4">${dStr}</td>
+            <td class="py-2 px-4">${row.flight_number}</td>
+            <td class="py-2 px-4">${row.departure_time || '-'}</td>
+            <td class="py-2 px-4">${CLASS_LABELS[row.booking_class] || row.booking_class} <span class="text-xs text-slate-400">(${row.booking_class})</span></td>
+            <td class="py-2 px-4">${statusBadge}</td>
+          </tr>
+        `;
+      });
+    }
+
+    // ==========================================
+    // ROUTES & TELEGRAM & STATUS
+    // ==========================================
+    function renderRoutesList() {
+      const cont = document.getElementById('routes-container');
+      cont.innerHTML = '';
+      const routes = currentConfig.routes || [];
+
+      if (routes.length === 0) {
+        cont.innerHTML = `<div class="col-span-2 text-center py-8 text-slate-400 text-sm">등록된 감시 노선이 없습니다. [새 노선 추가] 버튼을 눌러 추가하세요.</div>`;
+        return;
+      }
+
+      routes.forEach((r, idx) => {
+        const depN = airportMap[r.departure] || r.departure;
+        const arrN = airportMap[r.arrival] || r.arrival;
+        const monthsStr = (r.months || []).map(m => `${m.substring(0,4)}.${m.substring(4)}`).join(', ');
+        const classesStr = (r.seat_classes || []).map(c => CLASS_LABELS[c] || c).join(', ');
+
+        cont.innerHTML += `
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/50 hover:bg-white transition relative shadow-sm">
+            <div class="flex justify-between items-start mb-2">
+              <div class="flex items-center space-x-2">
+                <span class="font-black text-kal-navy text-lg">${r.departure}</span>
+                <i class="fa-solid fa-arrow-right-long text-kal-blue text-sm"></i>
+                <span class="font-black text-kal-navy text-lg">${r.arrival}</span>
+                <span class="text-xs text-slate-500 font-medium ml-1">(${depN} ➔ ${arrN})</span>
+              </div>
+              <button onclick="deleteRoute(${idx})" class="text-slate-400 hover:text-red-500 p-1"><i class="fa-solid fa-trash text-sm"></i></button>
+            </div>
+            <div class="text-xs text-slate-600 space-y-1 mt-3">
+              <div><span class="font-semibold text-slate-500">감시 대상월:</span> <span class="font-bold text-kal-blue">${monthsStr}</span></div>
+              <div><span class="font-semibold text-slate-500">감시 좌석:</span> <span>${classesStr}</span></div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    async function deleteRoute(idx) {
+      if (!confirm('이 노선을 모니터링 목록에서 삭제하시겠습니까?')) return;
+      currentConfig.routes.splice(idx, 1);
+      await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentConfig)
+      });
+      renderRoutesList();
+    }
+
+    function openAddRouteModal() { document.getElementById('modal-add-route').classList.remove('hidden'); }
+    function closeAddRouteModal() { document.getElementById('modal-add-route').classList.add('hidden'); }
+
+    async function submitAddRoute() {
+      const dep = document.getElementById('modal-dep').value;
+      const arr = document.getElementById('modal-arr').value;
+      if (dep === arr) {
+        alert('출발지와 도착지가 같을 수 없습니다.');
+        return;
+      }
+      const selectedMonths = Array.from(document.querySelectorAll('input[name="modal-month"]:checked')).map(el => el.value);
+      if (selectedMonths.length === 0) {
+        alert('최소 1개 이상의 감시 대상월을 선택하세요.');
+        return;
+      }
+      const selectedClasses = ['X', 'O', 'A', 'Z'].filter(c => document.getElementById(`modal-class-${c}`).checked);
+      if (selectedClasses.length === 0) {
+        alert('최소 1개 이상의 좌석 등급을 선택하세요.');
+        return;
+      }
+
+      currentConfig.routes.push({
+        departure: dep,
+        departure_name: airportMap[dep] || dep,
+        arrival: arr,
+        arrival_name: airportMap[arr] || arr,
+        months: selectedMonths,
+        seat_classes: selectedClasses
+      });
+
+      await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentConfig)
+      });
+
+      closeAddRouteModal();
+      renderRoutesList();
+    }
+
+    async function saveIntervalSetting() {
+      const val = parseInt(document.getElementById('setting-interval').value);
+      if (!currentConfig.monitoring) currentConfig.monitoring = {};
+      currentConfig.monitoring.check_interval_minutes = val;
+      await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentConfig)
+      });
+    }
+
+    async function saveTelegramSettings() {
+      const token = document.getElementById('tg-token').value.trim();
+      const chat_id = document.getElementById('tg-chat-id').value.trim();
+      const enabled = document.getElementById('tg-enabled').checked;
+
+      currentConfig.telegram = { bot_token: token, chat_id: chat_id, enabled: enabled };
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentConfig)
+      });
+      const data = await res.json();
+      alert(data.message || '텔레그램 설정이 저장되었습니다.');
+    }
+
+    async function testTelegramConnection() {
+      const token = document.getElementById('tg-token').value.trim();
+      const chat_id = document.getElementById('tg-chat-id').value.trim();
+      const resBox = document.getElementById('tg-test-result');
+      resBox.className = 'p-3 rounded-lg text-sm mt-3 bg-blue-50 text-blue-700 border border-blue-200 block';
+      resBox.innerText = '텔레그램 봇 연결 및 테스트 메시지를 전송하고 있습니다...';
+
+      const res = await fetch('/api/test_telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bot_token: token, chat_id: chat_id })
+      });
+      const result = await res.json();
+
+      if (result.success) {
+        resBox.className = 'p-3 rounded-lg text-sm mt-3 bg-green-50 text-green-700 border border-green-200 block';
+        resBox.innerHTML = `<b>✅ 성공!</b> ${result.message}`;
+      } else {
+        resBox.className = 'p-3 rounded-lg text-sm mt-3 bg-red-50 text-red-700 border border-red-200 block';
+        resBox.innerHTML = `<b>❌ 실패:</b> ${result.message}`;
+      }
+    }
+
+    async function toggleMonitor() {
+      const res = await fetch('/api/monitor/status');
+      const status = await res.json();
+      const endpoint = status.is_running ? '/api/monitor/stop' : '/api/monitor/start';
+      await fetch(endpoint, { method: 'POST' });
+      fetchStatus();
+    }
+
+    async function fetchStatus() {
+      const res = await fetch('/api/monitor/status');
+      const status = await res.json();
+      
+      const dot = document.getElementById('status-dot');
+      const txt = document.getElementById('status-text');
+      const btn = document.getElementById('btn-toggle-monitor');
+
+      if (status.is_running) {
+        dot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
+        txt.innerText = '자동 감시 중';
+        txt.className = 'text-xs text-emerald-300 font-bold';
+        btn.innerHTML = '<i class="fa-solid fa-pause mr-1"></i> 감시 일시중지';
+        btn.className = 'bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg transition shadow';
+      } else {
+        dot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-slate-400';
+        txt.innerText = '감시 대기 중';
+        txt.className = 'text-xs text-slate-300';
+        btn.innerHTML = '<i class="fa-solid fa-play mr-1"></i> 감시 시작';
+        btn.className = 'bg-kal-blue hover:bg-blue-600 text-white text-sm font-semibold px-4 py-1.5 rounded-lg transition shadow';
+      }
+
+      const terminal = document.getElementById('log-terminal');
+      if (terminal && status.logs) {
+        terminal.innerHTML = status.logs.map(l => `<div>${l}</div>`).join('') || '<div class="text-slate-500">기록된 로그가 없습니다.</div>';
+        terminal.scrollTop = terminal.scrollHeight;
+      }
+    }
+
+    window.onload = initPage;
+  </script>
+</body>
+</html>
