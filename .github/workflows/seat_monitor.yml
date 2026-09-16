@@ -77,9 +77,9 @@ jobs:
           path: data/seat_cache.json
           key: seat-cache-${{ github.run_id }}
 
-      - name: Build Web Dataset for GitHub Pages
+      - name: Build Web Dataset for GitHub Pages (Up to 12 Months)
         run: |
-          python src/build_static_data.py 2
+          python src/build_static_data.py 12
 
       - name: Commit & push updated dataset to GitHub Pages
         run: |

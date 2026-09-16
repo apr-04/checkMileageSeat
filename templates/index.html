@@ -253,6 +253,7 @@
                   <th class="py-2.5 px-4">출발시각</th>
                   <th class="py-2.5 px-4">좌석 클래스</th>
                   <th class="py-2.5 px-4">예약 가능 여부</th>
+                  <th class="py-2.5 px-4 text-right">예매</th>
                 </tr>
               </thead>
               <tbody id="results-tbody" class="divide-y divide-slate-100"></tbody>
@@ -465,6 +466,20 @@
       "G": "프리미엄승급"
     };
 
+    // 대한항공 공식 예약 페이지 딥링크 생성 함수 (선택한 출발지, 목적지, 탑승일자, 좌석등급 자동 반영)
+    function getKoreanAirBookingUrl(dep, arr, dateStr, bookingClass = 'X') {
+      const cleanDate = (dateStr || '').replace(/[^0-9]/g, '');
+      let cabin = 'economy';
+      if (bookingClass === 'O' || bookingClass === 'Z') {
+        cabin = 'business';
+      } else if (bookingClass === 'A') {
+        cabin = 'first';
+      } else if (bookingClass === 'W' || bookingClass === 'V') {
+        cabin = 'ecoPremium';
+      }
+      return `https://www.koreanair.com/booking/search?bookingType=A&tripType=OW&departure=${dep}&arrival=${arr}&departureDate=${cleanDate}&cabinClass=${cabin}`;
+    }
+
     function switchTab(tabId) {
       ['explore', 'search', 'routes', 'telegram', 'logs'].forEach(t => {
         document.getElementById(`view-${t}`).classList.add('hidden');
@@ -663,8 +678,8 @@
               <button onclick="showDestinationDetail('${item.destination}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2 px-3 rounded-lg transition text-center">
                 <i class="fa-solid fa-list-ul mr-1"></i> 일정표 보기
               </button>
-              <a href="https://www.koreanair.com/booking/search?bookingType=A&gnb=true" target="_blank" class="bg-kal-blue hover:bg-blue-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition text-center shadow-sm">
-                예매하기 ➔
+              <a href="${getKoreanAirBookingUrl(dep, item.destination, (item.available_dates && item.available_dates.length > 0) ? item.available_dates[0] : month + '01', hasFirst ? 'A' : (hasPrestige ? 'O' : (item.available_classes[0] || 'X')))}" target="_blank" class="bg-kal-blue hover:bg-blue-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition text-center shadow-sm flex items-center justify-center space-x-1" title="해당 일자 대한항공 예매 사이트로 이동">
+                <span>예매하기 ➔</span>
               </a>
             </div>
           </div>
@@ -676,14 +691,16 @@
       const item = currentExploreData.find(d => d.destination === destCode);
       if (!item) return;
 
+      const dep = document.getElementById('explore-dep').value;
       document.getElementById('modal-detail-title').innerText = `${item.destination_name} (${destCode}) 잔여 보너스 좌석 상세`;
-      document.getElementById('modal-detail-subtitle').innerText = `총 ${item.all_flights.length}개의 예약 가능한 항공편이 있습니다.`;
+      document.getElementById('modal-detail-subtitle').innerText = `총 ${item.all_flights.length}개의 예약 가능한 항공편이 있습니다. (예약 클릭 시 해당 일자 예약 페이지로 연결)`;
 
       const tbody = document.getElementById('modal-detail-tbody');
       tbody.innerHTML = '';
 
       item.all_flights.forEach(f => {
         const dStr = `${f.date.substring(0,4)}-${f.date.substring(4,6)}-${f.date.substring(6)}`;
+        const bookUrl = getKoreanAirBookingUrl(dep, destCode, f.date, f.booking_class);
         tbody.innerHTML += `
           <tr class="hover:bg-slate-50">
             <td class="py-2.5 px-3 font-semibold text-slate-800">${dStr}</td>
@@ -691,7 +708,7 @@
             <td class="py-2.5 px-3 text-slate-600">${f.departure_time || '-'}</td>
             <td class="py-2.5 px-3 font-semibold text-emerald-700">${CLASS_LABELS[f.booking_class] || f.booking_class} (${f.booking_class})</td>
             <td class="py-2.5 px-3 text-right">
-              <a href="https://www.koreanair.com/booking/search?bookingType=A&gnb=true" target="_blank" class="text-xs bg-kal-blue hover:bg-blue-600 text-white font-bold px-2 py-1 rounded">
+              <a href="${bookUrl}" target="_blank" class="text-xs bg-kal-blue hover:bg-blue-600 text-white font-bold px-2.5 py-1 rounded shadow-sm" title="${dStr} 항공권 예매 바로가기">
                 예약
               </a>
             </td>
@@ -759,6 +776,7 @@
       if (availableItems.length > 0) {
         availableItems.slice(0, 3).forEach(item => {
           const dStr = `${item.date.substring(4,6)}월 ${item.date.substring(6)}일`;
+          const bookUrl = getKoreanAirBookingUrl(dep, arr, item.date, item.booking_class);
           cards.innerHTML += `
             <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 shadow-sm">
               <div class="flex justify-between items-center mb-1">
@@ -766,7 +784,7 @@
                 <span class="text-xs bg-emerald-600 text-white font-bold px-2 py-0.5 rounded">${item.flight_number}</span>
               </div>
               <p class="text-xs text-emerald-700 font-semibold mt-1">예약 가능: ${CLASS_LABELS[item.booking_class] || item.booking_class} (${item.booking_class})</p>
-              <a href="https://www.koreanair.com/booking/search?bookingType=A&gnb=true" target="_blank" class="text-xs text-kal-blue hover:underline inline-block mt-2 font-bold">
+              <a href="${bookUrl}" target="_blank" class="text-xs text-kal-blue hover:underline inline-block mt-2 font-bold" title="${item.date} 예매 페이지로 이동">
                 대한항공 예매 ➔
               </a>
             </div>
@@ -783,6 +801,8 @@
           ? `<span class="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full"><i class="fa-solid fa-check mr-1"></i>예약 가능</span>`
           : `<span class="bg-slate-100 text-slate-400 text-xs font-medium px-2.5 py-1 rounded-full">매진</span>`;
 
+        const bookUrl = isAvail ? getKoreanAirBookingUrl(dep, arr, row.date, row.booking_class) : '#';
+
         tbody.innerHTML += `
           <tr class="${isAvail ? 'bg-green-50/40 font-semibold' : 'hover:bg-slate-50'}">
             <td class="py-2 px-4">${dStr}</td>
@@ -790,6 +810,9 @@
             <td class="py-2 px-4">${row.departure_time || '-'}</td>
             <td class="py-2 px-4">${CLASS_LABELS[row.booking_class] || row.booking_class} <span class="text-xs text-slate-400">(${row.booking_class})</span></td>
             <td class="py-2 px-4">${statusBadge}</td>
+            <td class="py-2 px-4 text-right">
+              ${isAvail ? `<a href="${bookUrl}" target="_blank" class="text-xs bg-kal-blue hover:bg-blue-600 text-white px-2.5 py-1 rounded font-bold shadow-sm" title="${dStr} 항공권 예매 바로가기">예매</a>` : '-'}
+            </td>
           </tr>
         `;
       });
