@@ -30,8 +30,9 @@ async def build_static_dataset(max_months: int = 12, target_departure: str = "IC
     """
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
 
-    # 스캔할 월 계산 (이번 달부터 최대 12개월 연속 계산)
-    now = datetime.datetime.now()
+    # 한국 표준시(KST) 기준 설정
+    KST = datetime.timezone(datetime.timedelta(hours=9))
+    now = datetime.datetime.now(KST)
     year = now.year
     month = now.month
     months_to_scan = []
@@ -79,10 +80,23 @@ async def build_static_dataset(max_months: int = 12, target_departure: str = "IC
                 "flights": []
             }
 
+            today_str = now.strftime("%Y%m%d")
+            now_time_str = now.strftime("%H:%M")
+
             for ym in months_to_scan:
                 try:
                     month_seats = await finder.fetch_month_seats(target_departure, arr, ym)
-                    # 빈좌석만 필터링
+
+                    # 과거 날짜 및 이미 출발한 당일 항공편 제외 처리
+                    for s in month_seats:
+                        f_date = s.get("date", "")
+                        f_time = s.get("departure_time", "")
+                        if f_date < today_str:
+                            s["available"] = False
+                        elif f_date == today_str and f_time and f_time <= now_time_str:
+                            s["available"] = False
+
+                    # 유효한 빈좌석만 필터링
                     avail = [s for s in month_seats if s.get("available")]
                     all_routes_data[route_key]["flights"].extend(month_seats)
 
@@ -95,7 +109,7 @@ async def build_static_dataset(max_months: int = 12, target_departure: str = "IC
                             "total_seats": len(avail),
                             "classes": sorted(list(set(s["booking_class"] for s in avail))),
                             "dates": sorted(list(set(s["date"] for s in avail))),
-                            "sample_flights": avail[:10]
+                            "sample_flights": [f for f in avail if f["booking_class"] in ["X", "O", "A"]][:10] or avail[:10]
                         })
 
                     await asyncio.sleep(0.3)
@@ -104,7 +118,7 @@ async def build_static_dataset(max_months: int = 12, target_departure: str = "IC
 
         # 메타데이터 및 최종 저장 객체
         dataset = {
-            "updated_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S (KST)"),
+            "updated_at": datetime.datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S (KST)"),
             "departure": target_departure,
             "departure_name": MAJOR_AIRPORTS.get(target_departure, target_departure),
             "months": months_to_scan,

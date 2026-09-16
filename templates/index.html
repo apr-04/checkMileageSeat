@@ -628,9 +628,13 @@
         return;
       }
 
+      const todayStr = new Date().toLocaleDateString('ko-KR', {year:'numeric', month:'2-digit', day:'2-digit'}).replace(/[^0-9]/g, '');
+      const nowTimeStr = new Date().toTimeString().slice(0, 5);
+
       respData.data.forEach((item, idx) => {
         const hasPrestige = item.available_classes.includes('O');
         const hasFirst = item.available_classes.includes('A');
+        const hasUpgradeOnly = !hasPrestige && item.available_classes.includes('Z');
         
         let badgeClass = 'bg-blue-100 text-blue-800';
         let badgeText = '일반석 가능';
@@ -640,14 +644,22 @@
         } else if (hasPrestige) {
           badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold';
           badgeText = '✨ 프레스티지 가능';
+        } else if (hasUpgradeOnly) {
+          badgeClass = 'bg-purple-100 text-purple-800 border border-purple-200';
+          badgeText = '좌석승급(Z)만 가능';
         }
 
-        // Available dates preview (first 5)
-        const dateBadges = item.available_dates.slice(0, 6).map(d => {
+        // Available dates preview (past dates filtered out)
+        const validDates = (item.available_dates || []).filter(d => d >= todayStr);
+        const displayDates = validDates.length > 0 ? validDates : (item.available_dates || []);
+        const targetDate = validDates.length > 0 ? validDates[0] : (item.available_dates[0] || month + '01');
+        const targetClass = hasFirst ? 'A' : (hasPrestige ? 'O' : 'X');
+
+        const dateBadges = displayDates.slice(0, 6).map(d => {
           return `<span class="bg-slate-100 text-slate-700 text-xs px-2 py-0.5 rounded font-mono">${d.substring(4,6)}/${d.substring(6)}</span>`;
         }).join(' ');
 
-        const moreCount = item.available_dates.length > 6 ? `<span class="text-xs text-slate-400 font-medium">+${item.available_dates.length - 6}일 더</span>` : '';
+        const moreCount = displayDates.length > 6 ? `<span class="text-xs text-slate-400 font-medium">+${displayDates.length - 6}일 더</span>` : '';
 
         grid.innerHTML += `
           <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 hover:shadow-md hover:border-kal-blue transition flex flex-col justify-between">
@@ -666,7 +678,7 @@
                   <span class="font-black text-kal-navy text-sm">${item.total_available_seats}석</span>
                 </div>
                 <div>
-                  <span class="text-slate-500 font-semibold block mb-1">예약 가능 일자 (${item.available_dates.length}일):</span>
+                  <span class="text-slate-500 font-semibold block mb-1">예약 가능 일자 (${displayDates.length}일):</span>
                   <div class="flex flex-wrap gap-1 items-center">
                     ${dateBadges} ${moreCount}
                   </div>
@@ -678,7 +690,7 @@
               <button onclick="showDestinationDetail('${item.destination}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2 px-3 rounded-lg transition text-center">
                 <i class="fa-solid fa-list-ul mr-1"></i> 일정표 보기
               </button>
-              <a href="${getKoreanAirBookingUrl(dep, item.destination, (item.available_dates && item.available_dates.length > 0) ? item.available_dates[0] : month + '01', hasFirst ? 'A' : (hasPrestige ? 'O' : (item.available_classes[0] || 'X')))}" target="_blank" class="bg-kal-blue hover:bg-blue-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition text-center shadow-sm flex items-center justify-center space-x-1" title="해당 일자 대한항공 예매 사이트로 이동">
+              <a href="${getKoreanAirBookingUrl(dep, item.destination, targetDate, targetClass)}" target="_blank" class="bg-kal-blue hover:bg-blue-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition text-center shadow-sm flex items-center justify-center space-x-1" title="해당 일자 대한항공 예매 사이트로 이동">
                 <span>예매하기 ➔</span>
               </a>
             </div>
@@ -691,6 +703,9 @@
       const item = currentExploreData.find(d => d.destination === destCode);
       if (!item) return;
 
+      const todayStr = new Date().toLocaleDateString('ko-KR', {year:'numeric', month:'2-digit', day:'2-digit'}).replace(/[^0-9]/g, '');
+      const nowTimeStr = new Date().toTimeString().slice(0, 5);
+
       const dep = document.getElementById('explore-dep').value;
       document.getElementById('modal-detail-title').innerText = `${item.destination_name} (${destCode}) 잔여 보너스 좌석 상세`;
       document.getElementById('modal-detail-subtitle').innerText = `총 ${item.all_flights.length}개의 예약 가능한 항공편이 있습니다. (예약 클릭 시 해당 일자 예약 페이지로 연결)`;
@@ -699,18 +714,21 @@
       tbody.innerHTML = '';
 
       item.all_flights.forEach(f => {
+        const isPast = f.date < todayStr || (f.date === todayStr && f.departure_time && f.departure_time <= nowTimeStr);
         const dStr = `${f.date.substring(0,4)}-${f.date.substring(4,6)}-${f.date.substring(6)}`;
-        const bookUrl = getKoreanAirBookingUrl(dep, destCode, f.date, f.booking_class);
+        const bookUrl = !isPast ? getKoreanAirBookingUrl(dep, destCode, f.date, f.booking_class) : '#';
+        const actionBtn = isPast
+          ? `<span class="text-xs bg-slate-200 text-slate-400 font-semibold px-2 py-1 rounded cursor-not-allowed">출발 완료</span>`
+          : `<a href="${bookUrl}" target="_blank" class="text-xs bg-kal-blue hover:bg-blue-600 text-white font-bold px-2.5 py-1 rounded shadow-sm" title="${dStr} 항공권 예매 바로가기">예약</a>`;
+
         tbody.innerHTML += `
-          <tr class="hover:bg-slate-50">
+          <tr class="hover:bg-slate-50 ${isPast ? 'opacity-40 bg-slate-50' : ''}">
             <td class="py-2.5 px-3 font-semibold text-slate-800">${dStr}</td>
             <td class="py-2.5 px-3 font-bold text-kal-navy">${f.flight_number}</td>
             <td class="py-2.5 px-3 text-slate-600">${f.departure_time || '-'}</td>
             <td class="py-2.5 px-3 font-semibold text-emerald-700">${CLASS_LABELS[f.booking_class] || f.booking_class} (${f.booking_class})</td>
             <td class="py-2.5 px-3 text-right">
-              <a href="${bookUrl}" target="_blank" class="text-xs bg-kal-blue hover:bg-blue-600 text-white font-bold px-2.5 py-1 rounded shadow-sm" title="${dStr} 항공권 예매 바로가기">
-                예약
-              </a>
+              ${actionBtn}
             </td>
           </tr>
         `;
