@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-16 23:20:22 (KST)",
+  "updated_at": "2026-09-17 03:19:33 (KST)",
   "departure": "ICN",
   "departure_name": "서울/인천",
   "months": [
@@ -15838,7 +15838,7 @@
       "destination": "SIN",
       "destination_name": "싱가포르",
       "month": "202609",
-      "total_seats": 54,
+      "total_seats": 52,
       "classes": [
         "N",
         "O",
@@ -15847,7 +15847,6 @@
         "Z"
       ],
       "dates": [
-        "20260916",
         "20260917",
         "20260918",
         "20260920",
@@ -15864,18 +15863,6 @@
       ],
       "sample_flights": [
         {
-          "date": "20260916",
-          "departure": "ICN",
-          "departure_name": "서울/인천, 대한민국",
-          "arrival": "SIN",
-          "arrival_name": "싱가포르/창이, 싱가포르",
-          "flight_number": "KE647",
-          "departure_time": "23:35",
-          "booking_class": "X",
-          "front_class": "E",
-          "available": true
-        },
-        {
           "date": "20260917",
           "departure": "ICN",
           "departure_name": "서울/인천, 대한민국",
@@ -15979,6 +15966,18 @@
           "arrival_name": "싱가포르/창이, 싱가포르",
           "flight_number": "KE647",
           "departure_time": "23:35",
+          "booking_class": "X",
+          "front_class": "E",
+          "available": true
+        },
+        {
+          "date": "20260921",
+          "departure": "ICN",
+          "departure_name": "서울/인천, 대한민국",
+          "arrival": "SIN",
+          "arrival_name": "싱가포르/창이, 싱가포르",
+          "flight_number": "KE643",
+          "departure_time": "13:50",
           "booking_class": "X",
           "front_class": "E",
           "available": true
@@ -317392,7 +317391,7 @@
           "departure_time": "23:35",
           "booking_class": "X",
           "front_class": "E",
-          "available": true
+          "available": false
         },
         {
           "date": "20260916",
@@ -317416,7 +317415,7 @@
           "departure_time": "23:35",
           "booking_class": "Z",
           "front_class": "U",
-          "available": true
+          "available": false
         },
         {
           "date": "20260917",
