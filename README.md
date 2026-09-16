@@ -25,17 +25,28 @@
 
 ## ☁️ Git 호스팅 및 배포 방법
 
-### 옵션 A. GitHub Actions 무료 24/7 무중단 호스팅 (가장 추천! ⭐️⭐️⭐️)
+### 🌐 옵션 1. GitHub Pages 웹사이트 무료 배포 (인터넷에서 바로 검색!) ⭐️⭐️⭐️
+내 컴퓨터를 켜지 않아도, 인터넷 브라우저(`https://<아이디>.github.io/<저장소>/`)에서 마일리지 빈 좌석을 즉시 조회하고 목적지를 탐색할 수 있습니다.
+
+1. 이 저장소를 GitHub에 푸시합니다.
+2. GitHub 저장소의 **[Settings]** ➔ 좌측 메뉴 **[Pages]** 로 이동합니다.
+3. **Build and deployment** 항목에서:
+   - Source: **Deploy from a branch** 선택
+   - Branch: **`main`** 브랜치 선택, 폴더는 **`/docs`** 선택 후 **[Save]** 클릭
+4. 약 1분 후 상단에 표시되는 `https://<본인아이디>.github.io/<저장소이름>/` 링크로 접속하면 **웹사이트에서 목적지 탐색 및 빈좌석 검색 기능을 즉시 이용**하실 수 있습니다!
+5. GitHub Actions가 30분마다 주요 노선 좌석 데이터를 자동 수집하여 웹사이트에 최신 상태로 갱신해 줍니다.
+
+---
+
+### 🔔 옵션 2. GitHub Actions 무료 24/7 텔레그램 자동 알림 (서버리스)
 컴퓨터를 켜두지 않아도 **GitHub의 무료 클라우드 가상머신이 30분마다 알아서 실행**되어 대한항공 빈좌석을 감시하고 텔레그램으로 알림을 보내줍니다.
 
-1. 이 저장소를 본인의 GitHub 계정으로 **Push** 또는 **Fork** 합니다.
-2. GitHub 저장소의 **[Settings]** ➔ **[Secrets and variables]** ➔ **[Actions]** 로 이동합니다.
-3. **[New repository secret]** 버튼을 눌러 아래 2개의 시크릿을 등록합니다:
+1. GitHub 저장소의 **[Settings]** ➔ **[Secrets and variables]** ➔ **[Actions]** 로 이동합니다.
+2. **[New repository secret]** 버튼을 눌러 아래 2개의 시크릿을 등록합니다:
    - `TELEGRAM_BOT_TOKEN` : 발급받은 텔레그램 봇 토큰
    - `TELEGRAM_CHAT_ID` : 본인의 텔레그램 Chat ID
-4. `config.example.json`을 참고하여 감시하고자 하는 노선을 수정한 뒤 커밋합니다.
-5. 저장소의 **[Actions]** 탭으로 이동하여 **`KAL Award Seat Periodic Monitor`** 워크플로우를 확인합니다.
-   - [Run workflow]를 눌러 즉시 테스트할 수 있으며, 이후에는 30분마다 자동으로 감시가 진행됩니다!
+3. 저장소의 **[Actions]** 탭으로 이동하여 **`KAL Award Seat Monitor & Web Dataset Builder`** 워크플로우를 확인합니다.
+   - 30분마다 자동으로 감시 및 웹사이트 데이터 갱신이 진행됩니다!
 
 ---
 

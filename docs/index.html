@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>대한항공 마일리지 빈좌석 실시간 탐색기 (GitHub Web)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            kal: {
+              blue: '#0064d2',
+              navy: '#00256c',
+              sky: '#00a3e0',
+              light: '#f0f7fc'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif; }
+    .tab-active { border-bottom: 3px solid #0064d2; color: #0064d2; font-weight: 700; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <!-- Top Navbar -->
+  <header class="bg-kal-navy text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="bg-white text-kal-navy p-2 rounded-lg font-black text-xl tracking-wider">
+          <i class="fa-solid fa-plane-departure text-kal-blue"></i> KAL
+        </div>
+        <div>
+          <h1 class="text-lg font-bold">대한항공 마일리지 빈좌석 실시간 탐색기</h1>
+          <p class="text-xs text-slate-300">GitHub Pages Edition • 자동 갱신 마일리지 좌석 지도</p>
+        </div>
+      </div>
+
+      <!-- Update Info & Refresh -->
+      <div class="flex items-center space-x-3">
+        <div class="hidden md:flex items-center space-x-2 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700 text-xs">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-slate-300">데이터 갱신: <span id="last-updated" class="font-bold text-white">불러오는 중...</span></span>
+        </div>
+        <button onclick="openRefreshModal()" class="bg-kal-blue hover:bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow flex items-center space-x-1">
+          <i class="fa-solid fa-rotate mr-1"></i> 데이터 새로고침
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 flex space-x-6 text-sm font-medium overflow-x-auto">
+      <button onclick="switchTab('explore')" id="tab-explore" class="py-3 px-2 tab-active transition flex items-center space-x-2 whitespace-nowrap">
+        <i class="fa-solid fa-earth-americas text-emerald-600"></i> <span>🌍 어디로 갈까? 빈좌석 목적지 탐색</span>
+      </button>
+      <button onclick="switchTab('search')" id="tab-search" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition flex items-center space-x-2 whitespace-nowrap">
+        <i class="fa-solid fa-magnifying-glass"></i> <span>특정 노선 상세 조회</span>
+      </button>
+      <button onclick="switchTab('guide')" id="tab-guide" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition flex items-center space-x-2 whitespace-nowrap">
+        <i class="fa-brands fa-telegram text-sky-500"></i> <span>텔레그램 자동 알림 설정법</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- TAB 1: Destination Explorer -->
+    <div id="view-explore" class="space-y-6">
+      <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-2xl p-6 shadow-md">
+        <div class="max-w-3xl">
+          <span class="bg-emerald-500 text-white text-xs font-black uppercase px-2.5 py-1 rounded-full tracking-wide">GitHub Live Explorer</span>
+          <h2 class="text-2xl font-black mt-2">휴가 시기에 마일리지 좌석 남아있는 여행지 찾기</h2>
+          <p class="text-sm text-slate-200 mt-1">원하는 여행 월과 좌석 등급을 선택하시면, 대한항공 주요 취항지 중 <b>현재 마일리지 예약이 가능한 목적지와 날짜 목록</b>을 즉시 필터링하여 보여드립니다.</p>
+        </div>
+
+        <!-- Filter Box -->
+        <div class="mt-6 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 grid grid-cols-1 md:grid-cols-4 gap-4 text-slate-800">
+          <div>
+            <label class="block text-xs font-bold text-slate-200 uppercase mb-1">출발지 (Departure)</label>
+            <select id="exp-dep" onchange="applyExploreFilter()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none">
+              <option value="ICN" selected>서울/인천 (ICN)</option>
+              <option value="GMP">서울/김포 (GMP)</option>
+              <option value="PUS">부산/김해 (PUS)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-200 uppercase mb-1">여행 시기 (Month)</label>
+            <select id="exp-month" onchange="applyExploreFilter()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none">
+              <!-- populated by JS -->
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-200 uppercase mb-1">지역 (Region)</label>
+            <select id="exp-region" onchange="applyExploreFilter()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none">
+              <option value="ALL">🌐 전 세계 전체</option>
+              <option value="JAPAN">🇯🇵 일본 (도쿄/오사카/후쿠오카/삿포로)</option>
+              <option value="SOUTHEAST_ASIA">🌴 동남아/휴양지 (방콕/다낭/싱가포르/발리)</option>
+              <option value="AMERICA">🇺🇸 미주/하와이/괌 (호놀룰루/뉴욕/LA/괌)</option>
+              <option value="EUROPE">🇪🇺 유럽 (파리/런던/로마/바르셀로나)</option>
+              <option value="OCEANIA">🌊 대양주 (시드니/오클랜드)</option>
+            </select>
+          </div>
+
+          <div class="flex items-end">
+            <button onclick="applyExploreFilter()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-lg transition shadow-lg flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-filter"></i> <span>필터 즉시 적용</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Class Filter -->
+        <div class="mt-3 flex flex-wrap items-center gap-4 text-xs font-medium text-slate-200">
+          <span class="text-slate-300 font-bold">포함할 좌석 등급:</span>
+          <label class="inline-flex items-center space-x-1.5 cursor-pointer bg-white/10 px-2.5 py-1 rounded-lg hover:bg-white/20">
+            <input type="checkbox" id="class-O" value="O" checked onchange="applyExploreFilter()" class="rounded text-emerald-500">
+            <span class="font-bold text-emerald-300">프레스티지 (O)</span>
+          </label>
+          <label class="inline-flex items-center space-x-1.5 cursor-pointer bg-white/10 px-2.5 py-1 rounded-lg hover:bg-white/20">
+            <input type="checkbox" id="class-A" value="A" checked onchange="applyExploreFilter()" class="rounded text-amber-500">
+            <span class="font-bold text-amber-300">일등석 (A)</span>
+          </label>
+          <label class="inline-flex items-center space-x-1.5 cursor-pointer bg-white/10 px-2.5 py-1 rounded-lg hover:bg-white/20">
+            <input type="checkbox" id="class-X" value="X" checked onchange="applyExploreFilter()" class="rounded text-blue-400">
+            <span>일반석 (X)</span>
+          </label>
+          <label class="inline-flex items-center space-x-1.5 cursor-pointer bg-white/10 px-2.5 py-1 rounded-lg hover:bg-white/20">
+            <input type="checkbox" id="class-Z" value="Z" checked onchange="applyExploreFilter()" class="rounded text-blue-400">
+            <span>프레스티지 승급 (Z)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Results Area -->
+      <div id="explore-results-box" class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 id="exp-results-title" class="text-lg font-black text-slate-800"></h3>
+            <p id="exp-results-sub" class="text-xs text-slate-500"></p>
+          </div>
+          <span id="exp-badge" class="text-xs font-bold bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-full"></span>
+        </div>
+
+        <div id="exp-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Specific Route Search -->
+    <div id="view-search" class="hidden space-y-6">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center">
+          <i class="fa-solid fa-magnifying-glass text-kal-blue mr-2"></i> 특정 노선 상세 일자별 좌석 조회
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">도착지 (To)</label>
+            <select id="route-arr" onchange="renderSpecificRoute()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">탑승월 (Month)</label>
+            <select id="route-month" onchange="renderSpecificRoute()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none"></select>
+          </div>
+          <div class="flex items-end">
+            <button onclick="renderSpecificRoute()" class="w-full bg-kal-navy hover:bg-blue-950 text-white font-bold py-2 px-4 rounded-lg text-sm transition shadow">
+              상세 일정 확인
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Specific Route Table -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+          <h4 id="route-table-title" class="font-bold text-sm text-slate-700">노선별 일자별 항공편 상세</h4>
+          <span id="route-count-badge" class="text-xs font-semibold bg-blue-100 text-kal-blue px-2.5 py-1 rounded-full"></span>
+        </div>
+        <div class="overflow-x-auto max-h-96">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-100 text-slate-600 text-xs uppercase sticky top-0">
+              <tr>
+                <th class="py-2.5 px-4">탑승일자</th>
+                <th class="py-2.5 px-4">편명</th>
+                <th class="py-2.5 px-4">출발시각</th>
+                <th class="py-2.5 px-4">좌석 클래스</th>
+                <th class="py-2.5 px-4">예약 가능 여부</th>
+                <th class="py-2.5 px-4 text-right">예매</th>
+              </tr>
+            </thead>
+            <tbody id="route-tbody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Telegram Guide -->
+    <div id="view-guide" class="hidden space-y-6">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center">
+            <i class="fa-brands fa-telegram text-sky-500 mr-2 text-xl"></i> GitHub Actions로 24시간 무료 텔레그램 알림 받기
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">내 컴퓨터를 켜두지 않아도, GitHub가 30분마다 자동으로 대한항공 좌석을 확인하고 취소표가 나오면 텔레그램으로 알려줍니다.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+            <span class="bg-kal-navy text-white font-bold px-2 py-0.5 rounded text-[10px]">STEP 1</span>
+            <h4 class="font-bold text-slate-800 text-sm">텔레그램 봇 토큰 발급</h4>
+            <p class="text-slate-600 leading-relaxed">
+              1. 텔레그램에서 <b>@BotFather</b> 검색 후 대화 시작<br>
+              2. <code>/newbot</code> 입력 후 봇 생성<br>
+              3. 발급된 <b>HTTP API 토큰</b> 복사<br>
+              4. <b>@userinfobot</b> 에게 대화하여 내 <b>Chat ID 숫자</b> 확인<br>
+              5. 생성한 봇에게 꼭 <b>/start</b> 메시지 1회 전송!
+            </p>
+          </div>
+
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+            <span class="bg-kal-navy text-white font-bold px-2 py-0.5 rounded text-[10px]">STEP 2</span>
+            <h4 class="font-bold text-slate-800 text-sm">GitHub Secrets 등록</h4>
+            <p class="text-slate-600 leading-relaxed">
+              1. 내 GitHub 저장소의 <b>Settings</b> ➔ <b>Secrets and variables</b> ➔ <b>Actions</b> 이동<br>
+              2. <b>New repository secret</b> 클릭 후 2개 등록:<br>
+              • <code>TELEGRAM_BOT_TOKEN</code> : 내 봇 토큰<br>
+              • <code>TELEGRAM_CHAT_ID</code> : 내 Chat ID
+            </p>
+          </div>
+
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+            <span class="bg-kal-navy text-white font-bold px-2 py-0.5 rounded text-[10px]">STEP 3</span>
+            <h4 class="font-bold text-slate-800 text-sm">자동 모니터링 활성화</h4>
+            <p class="text-slate-600 leading-relaxed">
+              1. 저장소의 <b>Actions</b> 탭으로 이동<br>
+              2. <b>KAL Award Seat Periodic Monitor</b> 확인<br>
+              3. 이후 30분마다 GitHub가 알아서 좌석을 확인하고 취소표 발생 시 텔레그램으로 알림을 보냅니다!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Detail Modal -->
+  <div id="modal-detail" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[85vh] flex flex-col">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div>
+          <h3 id="modal-title" class="font-black text-slate-800 text-lg"></h3>
+          <p id="modal-sub" class="text-xs text-slate-500"></p>
+        </div>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto flex-1 pr-1">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-100 text-slate-600 text-xs uppercase sticky top-0">
+            <tr>
+              <th class="py-2 px-3">탑승일자</th>
+              <th class="py-2 px-3">편명</th>
+              <th class="py-2 px-3">출발시각</th>
+              <th class="py-2 px-3">좌석 클래스</th>
+              <th class="py-2 px-3 text-right">예매</th>
+            </tr>
+          </thead>
+          <tbody id="modal-tbody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
+        <a href="https://www.koreanair.com/booking/search?bookingType=A&gnb=true" target="_blank" class="text-xs font-bold text-kal-blue hover:underline">
+          대한항공 마일리지 예매 바로가기 ➔
+        </a>
+        <button onclick="closeModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-sm">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Refresh Modal -->
+  <div id="modal-refresh" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-800 text-base">GitHub Actions 즉시 새로고침</h3>
+        <button onclick="closeRefreshModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        GitHub Actions 워크플로우를 실행하여 지금 즉시 대한항공 마일리지 좌석을 다시 스캔할 수 있습니다.
+      </p>
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 mb-1">GitHub 저장소 (예: username/repo)</label>
+        <input type="text" id="gh-repo" placeholder="username/repository-name" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 mb-1">GitHub Personal Access Token (PAT) (선택)</label>
+        <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxx" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono">
+        <span class="text-[11px] text-slate-400 mt-0.5 block">토큰이 없으시면 GitHub 저장소의 Actions 탭에서 [Run workflow]를 클릭하셔도 됩니다.</span>
+      </div>
+      <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+        <button onclick="closeRefreshModal()" class="px-3 py-1.5 text-xs text-slate-600">취소</button>
+        <button onclick="triggerGitHubAction()" class="bg-kal-blue hover:bg-blue-600 text-white font-bold px-4 py-1.5 rounded-lg text-xs shadow">
+          새로고침 요청
+        </button>
+      </div>
+      <div id="refresh-status" class="hidden text-xs p-2.5 rounded bg-blue-50 text-blue-700"></div>
+    </div>
+  </div>
+
+  <script>
+    let globalDataset = null;
+    const CLASS_LABELS = {
+      "X": "일반석",
+      "O": "프레스티지",
+      "A": "일등석",
+      "Z": "좌석승급",
+      "W": "프리미엄",
+      "G": "프리미엄승급"
+    };
+
+    function switchTab(tId) {
+      ['explore', 'search', 'guide'].forEach(t => {
+        document.getElementById(`view-${t}`).classList.add('hidden');
+        document.getElementById(`tab-${t}`).classList.remove('tab-active');
+        document.getElementById(`tab-${t}`).classList.add('text-slate-500');
+      });
+      document.getElementById(`view-${tId}`).classList.remove('hidden');
+      document.getElementById(`tab-${tId}`).classList.add('tab-active');
+      document.getElementById(`tab-${tId}`).classList.remove('text-slate-500');
+    }
+
+    async function loadData() {
+      try {
+        const res = await fetch('./data/latest_seats.json');
+        if (!res.ok) throw new Error('Data file not found');
+        globalDataset = await res.json();
+        renderPage();
+      } catch (e) {
+        console.warn('Could not load latest_seats.json:', e);
+        document.getElementById('last-updated').innerText = '데이터 파일 없음 (Action 실행 필요)';
+        // Show demo message
+        document.getElementById('exp-cards-grid').innerHTML = `
+          <div class="col-span-3 text-center py-12 bg-white rounded-2xl border border-slate-200 p-8">
+            <i class="fa-solid fa-cloud-arrow-down text-3xl text-kal-blue mb-3"></i>
+            <h4 class="font-bold text-slate-800 text-base">최신 좌석 데이터 준비 중입니다</h4>
+            <p class="text-xs text-slate-500 mt-1">GitHub 저장소의 Actions 탭에서 <b>[Run workflow]</b>를 실행하시면 최신 좌석 데이터가 여기에 자동으로 표시됩니다.</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderPage() {
+      if (!globalDataset) return;
+
+      document.getElementById('last-updated').innerText = globalDataset.updated_at || '방금 전';
+
+      // Month select options
+      const mSelect = document.getElementById('exp-month');
+      const rMSelect = document.getElementById('route-month');
+      mSelect.innerHTML = '';
+      rMSelect.innerHTML = '';
+
+      (globalDataset.months || []).forEach(m => {
+        const lbl = `${m.substring(0,4)}년 ${m.substring(4)}월`;
+        mSelect.add(new Option(lbl, m));
+        rMSelect.add(new Option(lbl, m));
+      });
+
+      // Destination select for Specific Route
+      const arrSelect = document.getElementById('route-arr');
+      arrSelect.innerHTML = '';
+      for (const [code, name] of Object.entries(globalDataset.airports || {})) {
+        if (code !== 'ICN') {
+          arrSelect.add(new Option(`${name} (${code})`, code));
+        }
+      }
+
+      applyExploreFilter();
+      renderSpecificRoute();
+    }
+
+    function applyExploreFilter() {
+      if (!globalDataset) return;
+
+      const selMonth = document.getElementById('exp-month').value;
+      const selRegion = document.getElementById('exp-region').value;
+      const selectedClasses = ['X', 'O', 'A', 'Z'].filter(c => document.getElementById(`class-${c}`).checked);
+
+      // Get allowed airports for region
+      let allowedAirports = null;
+      if (selRegion !== 'ALL' && globalDataset.regions && globalDataset.regions[selRegion]) {
+        allowedAirports = new Set(globalDataset.regions[selRegion].airports);
+      }
+
+      // Filter destinations_summary
+      let matched = (globalDataset.destinations_summary || []).filter(item => {
+        if (item.month !== selMonth) return false;
+        if (allowedAirports && !allowedAirports.has(item.destination)) return false;
+        // Check if any selected class exists
+        const hasClass = item.classes.some(c => selectedClasses.includes(c));
+        return hasClass;
+      });
+
+      // Sort by total seats descending
+      matched.sort((a, b) => b.total_seats - a.total_seats);
+
+      const mStr = `${selMonth.substring(0,4)}년 ${selMonth.substring(4)}월`;
+      document.getElementById('exp-results-title').innerText = `서울/인천(ICN) 출발 ➔ ${mStr} 빈좌석 여행지`;
+      document.getElementById('exp-results-sub').innerText = `선택하신 조건으로 현재 총 ${matched.length}개 도시에서 마일리지 좌석이 확인되었습니다.`;
+      document.getElementById('exp-badge').innerText = `${matched.length}개 도시 가능`;
+
+      const grid = document.getElementById('exp-cards-grid');
+      grid.innerHTML = '';
+
+      if (matched.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-3 text-center py-12 bg-white rounded-2xl border border-slate-200 p-8 text-slate-500">
+            <p class="font-bold text-slate-700">선택하신 조건으로 예약 가능한 목적지가 없습니다.</p>
+            <p class="text-xs text-slate-400 mt-1">다른 월이나 일반석(X) 등급을 포함하여 다시 확인해 보세요.</p>
+          </div>
+        `;
+        return;
+      }
+
+      matched.forEach(item => {
+        const hasPrestige = item.classes.includes('O');
+        const hasFirst = item.classes.includes('A');
+        let badgeClass = 'bg-blue-100 text-blue-800';
+        let badgeText = '일반석 가능';
+        if (hasFirst) {
+          badgeClass = 'bg-amber-100 text-amber-900 border border-amber-300 font-bold';
+          badgeText = '👑 일등석 가능';
+        } else if (hasPrestige) {
+          badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold';
+          badgeText = '✨ 프레스티지 가능';
+        }
+
+        const dateBadges = item.dates.slice(0, 5).map(d => {
+          return `<span class="bg-slate-100 text-slate-700 text-xs px-2 py-0.5 rounded font-mono">${d.substring(4,6)}/${d.substring(6)}</span>`;
+        }).join(' ');
+        const moreCount = item.dates.length > 5 ? `<span class="text-xs text-slate-400 font-medium">+${item.dates.length - 5}일</span>` : '';
+
+        grid.innerHTML += `
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h4 class="font-black text-slate-800 text-lg">${item.destination_name}</h4>
+                  <span class="text-xs font-mono font-bold text-kal-blue bg-blue-50 px-2 py-0.5 rounded">${item.destination}</span>
+                </div>
+                <span class="text-xs px-2.5 py-1 rounded-full ${badgeClass}">${badgeText}</span>
+              </div>
+
+              <div class="mt-3 text-xs text-slate-600 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-500 font-semibold">총 잔여 좌석 수:</span>
+                  <span class="font-black text-kal-navy text-sm">${item.total_seats}석</span>
+                </div>
+                <div>
+                  <span class="text-slate-500 font-semibold block mb-1">예약 가능 일자 (${item.dates.length}일):</span>
+                  <div class="flex flex-wrap gap-1 items-center">
+                    ${dateBadges} ${moreCount}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <button onclick="showModal('${item.destination}', '${item.month}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2 px-3 rounded-lg transition text-center">
+                <i class="fa-solid fa-list-ul mr-1"></i> 일정표 보기
+              </button>
+              <a href="https://www.koreanair.com/booking/search?bookingType=A&gnb=true" target="_blank" class="bg-kal-blue hover:bg-blue-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition text-center shadow-sm">
+                예매하기 ➔
+              </a>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function showModal(destCode, month) {
+      if (!globalDataset) return;
+      const routeKey = `ICN_${destCode}`;
+      const route = globalDataset.routes_data?.[routeKey];
+      if (!route) return;
+
+      const destName = globalDataset.airports?.[destCode] || destCode;
+      document.getElementById('modal-title').innerText = `${destName} (${destCode}) 마일리지 좌석 상세`;
+      document.getElementById('modal-sub').innerText = `${month.substring(0,4)}년 ${month.substring(4)}월 운항 항공편 현황`;
+
+      const tbody = document.getElementById('modal-tbody');
+      tbody.innerHTML = '';
+
+      const monthFlights = (route.flights || []).filter(f => f.date && f.date.startsWith(month) && f.available);
+
+      if (monthFlights.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">잔여 좌석이 없습니다.</td></tr>`;
+      } else {
+        monthFlights.forEach(f => {
+          const dStr = `${f.date.substring(0,4)}-${f.date.substring(4,6)}-${f.date.substring(6)}`;
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-50">
+              <td class="py-2.5 px-3 font-semibold text-slate-800">${dStr}</td>
+              <td class="py-2.5 px-3 font-bold text-kal-navy">${f.flight_number}</td>
+              <td class="py-2.5 px-3 text-slate-600">${f.departure_time || '-'}</td>
+              <td class="py-2.5 px-3 font-semibold text-emerald-700">${CLASS_LABELS[f.booking_class] || f.booking_class} (${f.booking_class})</td>
+              <td class="py-2.5 px-3 text-right">
+                <a href="https://www.koreanair.com/booking/search?bookingType=A&gnb=true" target="_blank" class="text-xs bg-kal-blue hover:bg-blue-600 text-white font-bold px-2 py-1 rounded">예약</a>
+              </td>
+            </tr>
+          `;
+        });
+      }
+
+      document.getElementById('modal-detail').classList.remove('hidden');
+    }
+
+    function closeModal() { document.getElementById('modal-detail').classList.add('hidden'); }
+
+    function renderSpecificRoute() {
+      if (!globalDataset) return;
+      const arr = document.getElementById('route-arr').value;
+      const month = document.getElementById('route-month').value;
+      const routeKey = `ICN_${arr}`;
+      const route = globalDataset.routes_data?.[routeKey];
+
+      const arrName = globalDataset.airports?.[arr] || arr;
+      document.getElementById('route-table-title').innerText = `서울/인천 ➔ ${arrName} (${month.substring(0,4)}년 ${month.substring(4)}월 전체 항공편)`;
+
+      const tbody = document.getElementById('route-tbody');
+      tbody.innerHTML = '';
+
+      if (!route || !route.flights) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 text-xs">수집된 데이터가 없습니다. (Actions를 실행해 업데이트하세요)</td></tr>`;
+        document.getElementById('route-count-badge').innerText = '0개 항목';
+        return;
+      }
+
+      const flights = route.flights.filter(f => f.date && f.date.startsWith(month));
+      const availCount = flights.filter(f => f.available).length;
+      document.getElementById('route-count-badge').innerText = `총 ${flights.length}편 중 잔여좌석 ${availCount}편`;
+
+      flights.forEach(f => {
+        const dStr = `${f.date.substring(0,4)}-${f.date.substring(4,6)}-${f.date.substring(6)}`;
+        const statusBadge = f.available
+          ? `<span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-check mr-1"></i>가능</span>`
+          : `<span class="bg-slate-100 text-slate-400 text-xs px-2 py-0.5 rounded-full">매진</span>`;
+
+        tbody.innerHTML += `
+          <tr class="${f.available ? 'bg-green-50/40 font-semibold' : 'hover:bg-slate-50'}">
+            <td class="py-2.5 px-4">${dStr}</td>
+            <td class="py-2.5 px-4">${f.flight_number}</td>
+            <td class="py-2.5 px-4">${f.departure_time || '-'}</td>
+            <td class="py-2.5 px-4">${CLASS_LABELS[f.booking_class] || f.booking_class} <span class="text-xs text-slate-400">(${f.booking_class})</span></td>
+            <td class="py-2.5 px-4">${statusBadge}</td>
+            <td class="py-2.5 px-4 text-right">
+              ${f.available ? `<a href="https://www.koreanair.com/booking/search?bookingType=A&gnb=true" target="_blank" class="text-xs bg-kal-blue text-white px-2 py-1 rounded font-bold">예매</a>` : '-'}
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function openRefreshModal() { document.getElementById('modal-refresh').classList.remove('hidden'); }
+    function closeRefreshModal() { document.getElementById('modal-refresh').classList.add('hidden'); }
+
+    async function triggerGitHubAction() {
+      const repo = document.getElementById('gh-repo').value.trim();
+      const token = document.getElementById('gh-token').value.trim();
+      const statusBox = document.getElementById('refresh-status');
+
+      if (!repo) {
+        alert('저장소 이름(username/repo)을 입력해주세요.');
+        return;
+      }
+      if (!token) {
+        alert('GitHub Token이 필요합니다. 없을 경우 GitHub 웹사이트 Actions 탭에서 직접 [Run workflow]를 누르실 수 있습니다.');
+        return;
+      }
+
+      statusBox.className = 'text-xs p-2.5 rounded bg-blue-50 text-blue-700 block';
+      statusBox.innerText = 'GitHub Actions 워크플로우를 트리거하는 중...';
+
+      try {
+        const res = await fetch(`https://api.github.com/repos/${repo}/actions/workflows/seat_monitor.yml/dispatches`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ ref: 'main' })
+        });
+
+        if (res.status === 204) {
+          statusBox.className = 'text-xs p-2.5 rounded bg-green-50 text-green-700 block';
+          statusBox.innerText = '✅ 성공! GitHub Actions가 실행되었습니다. 약 1~2분 뒤 새로고침하시면 최신 데이터가 반영됩니다.';
+        } else {
+          const err = await res.json();
+          statusBox.className = 'text-xs p-2.5 rounded bg-red-50 text-red-700 block';
+          statusBox.innerText = `❌ 오류: ${err.message || '실행 실패'}`;
+        }
+      } catch (e) {
+        statusBox.className = 'text-xs p-2.5 rounded bg-red-50 text-red-700 block';
+        statusBox.innerText = `네트워크 오류: ${e}`;
+      }
+    }
+
+    window.onload = loadData;
+  </script>
+</body>
+</html>

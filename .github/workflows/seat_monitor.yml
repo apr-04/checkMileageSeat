@@ -1,4 +1,4 @@
-name: KAL Award Seat Periodic Monitor
+name: KAL Award Seat Monitor & Web Dataset Builder
 
 on:
   schedule:
@@ -13,10 +13,13 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: write
+
 jobs:
   check-seats:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Check out repository
@@ -40,7 +43,6 @@ jobs:
           echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
-          # Install Playwright dependencies
           python -m playwright install --with-deps chromium
 
       - name: Restore seat cache (to prevent duplicate alerts)
@@ -57,7 +59,7 @@ jobs:
             cp config.example.json config.json
           fi
 
-      - name: Run Award Seat Check
+      - name: Run Award Seat Telegram Check
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -74,3 +76,14 @@ jobs:
         with:
           path: data/seat_cache.json
           key: seat-cache-${{ github.run_id }}
+
+      - name: Build Web Dataset for GitHub Pages
+        run: |
+          python src/build_static_data.py 2
+
+      - name: Commit & push updated dataset to GitHub Pages
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/data/latest_seats.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update award seat dataset [skip ci]" && git push origin main)
