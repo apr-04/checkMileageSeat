@@ -90,11 +90,24 @@
           <p class="text-sm text-slate-200 mt-1">원하는 여행 월과 좌석 등급(프레스티지/일등석/일반석)을 선택하시면, 대한항공 주요 취항지를 스캔하여 <b>지금 예약 가능한 목적지와 날짜 목록</b>을 한눈에 보여드립니다.</p>
         </div>
 
+        <!-- Direction Segmented Control -->
+        <div class="mt-4 flex flex-wrap items-center gap-3">
+          <span class="text-xs font-bold text-slate-300">여정 방향:</span>
+          <div class="inline-flex rounded-xl bg-black/25 p-1 border border-white/20 shadow-inner">
+            <button type="button" id="exp-dir-btn-outbound" onclick="setExploreDirection('OUTBOUND')" class="px-4 py-2 text-xs font-bold rounded-lg transition shadow-sm bg-white text-kal-navy">
+              <i class="fa-solid fa-plane-departure mr-1.5 text-kal-blue"></i> 서울 출발 (인천 ➔ 해외)
+            </button>
+            <button type="button" id="exp-dir-btn-inbound" onclick="setExploreDirection('INBOUND')" class="px-4 py-2 text-xs font-bold rounded-lg transition text-slate-200 hover:text-white hover:bg-white/10">
+              <i class="fa-solid fa-plane-arrival mr-1.5 text-emerald-400"></i> 서울 귀국 (해외 ➔ 인천)
+            </button>
+          </div>
+        </div>
+
         <!-- Filter Box inside Hero -->
-        <div class="mt-6 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 grid grid-cols-1 md:grid-cols-4 gap-4 text-slate-800">
+        <div class="mt-4 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 grid grid-cols-1 md:grid-cols-4 gap-4 text-slate-800">
           <!-- Departure -->
           <div>
-            <label class="block text-xs font-bold text-slate-200 uppercase mb-1">출발지 (Departure)</label>
+            <label id="lbl-explore-base" class="block text-xs font-bold text-slate-200 uppercase mb-1">기준 공항 (인천/김포)</label>
             <select id="explore-dep" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none">
               <option value="ICN" selected>서울/인천 (ICN)</option>
               <option value="GMP">서울/김포 (GMP)</option>
@@ -112,7 +125,7 @@
 
           <!-- Region -->
           <div>
-            <label class="block text-xs font-bold text-slate-200 uppercase mb-1">지역 (Region)</label>
+            <label class="block text-xs font-bold text-slate-200 uppercase mb-1">해외 지역 (Region)</label>
             <select id="explore-region" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none">
               <option value="ALL">🌐 전 세계 전체</option>
               <option value="JAPAN">🇯🇵 일본 (도쿄/오사카/후쿠오카/삿포로)</option>
@@ -184,20 +197,27 @@
           <i class="fa-solid fa-magnifying-glass text-kal-blue mr-2"></i> 특정 노선 실시간 보너스 좌석 검색
         </h2>
         
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+          <div class="md:col-span-2">
             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">출발지 (From)</label>
             <select id="search-dep" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-kal-blue focus:outline-none"></select>
           </div>
-          <div>
+          <div class="flex justify-center items-center pb-0.5">
+            <button type="button" onclick="swapInstantSearchAirports()" class="w-full bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 font-bold px-3 py-2 rounded-lg text-sm transition shadow-sm flex items-center justify-center space-x-1" title="출발지 / 도착지 맞바꾸기">
+              <i class="fa-solid fa-arrow-right-arrow-left text-kal-blue"></i> <span class="text-xs">맞바꾸기</span>
+            </button>
+          </div>
+          <div class="md:col-span-2">
             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">도착지 (To)</label>
             <select id="search-arr" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-kal-blue focus:outline-none"></select>
           </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 items-end">
           <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">탑승월 (Month)</label>
             <select id="search-month" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-kal-blue focus:outline-none"></select>
           </div>
-          <div class="flex items-end">
+          <div>
             <button onclick="executeInstantSearch()" id="btn-search" class="w-full bg-kal-navy hover:bg-blue-950 text-white font-bold py-2 px-4 rounded-lg transition shadow flex items-center justify-center space-x-2">
               <i class="fa-solid fa-search"></i> <span>좌석 조회하기</span>
             </button>
@@ -568,6 +588,33 @@
       renderRoutesList();
     }
 
+    let currentExploreDirection = 'OUTBOUND';
+
+    function setExploreDirection(dir) {
+      currentExploreDirection = dir;
+      const btnOut = document.getElementById('exp-dir-btn-outbound');
+      const btnIn = document.getElementById('exp-dir-btn-inbound');
+      const lblBase = document.getElementById('lbl-explore-base');
+
+      if (dir === 'OUTBOUND') {
+        btnOut.className = 'px-4 py-2 text-xs font-bold rounded-lg transition shadow-sm bg-white text-kal-navy';
+        btnIn.className = 'px-4 py-2 text-xs font-bold rounded-lg transition text-slate-200 hover:text-white hover:bg-white/10';
+        if (lblBase) lblBase.innerText = '출발지 (Departure)';
+      } else {
+        btnIn.className = 'px-4 py-2 text-xs font-bold rounded-lg transition shadow-sm bg-white text-emerald-900 font-black';
+        btnOut.className = 'px-4 py-2 text-xs font-bold rounded-lg transition text-slate-200 hover:text-white hover:bg-white/10';
+        if (lblBase) lblBase.innerText = '도착지 (Arrival)';
+      }
+    }
+
+    function swapInstantSearchAirports() {
+      const dep = document.getElementById('search-dep');
+      const arr = document.getElementById('search-arr');
+      const temp = dep.value;
+      dep.value = arr.value;
+      arr.value = temp;
+    }
+
     // ==========================================
     // DESTINATION EXPLORER LOGIC (NEW!)
     // ==========================================
@@ -589,7 +636,7 @@
         const res = await fetch('/api/explore', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ departure: dep, month: month, region: region, seat_classes: classes })
+          body: JSON.stringify({ departure: dep, month: month, region: region, seat_classes: classes, direction: currentExploreDirection })
         });
         const respData = await res.json();
         document.getElementById('explore-loading').classList.add('hidden');
@@ -610,9 +657,13 @@
     function renderExploreResults(respData, dep, month) {
       document.getElementById('explore-results-box').classList.remove('hidden');
       const mStr = `${month.substring(0,4)}년 ${month.substring(4)}월`;
-      document.getElementById('explore-results-title').innerText = `${airportMap[dep] || dep} 출발 ➔ ${mStr} 빈좌석이 있는 목적지`;
-      document.getElementById('explore-results-subtitle').innerText = `스캔한 ${respData.scanned_count}개 목적지 중 현재 ${respData.found_count}개 도시에서 마일리지 예약이 가능합니다.`;
-      document.getElementById('explore-badge-count').innerText = `${respData.found_count}개 목적지 발견`;
+      if (currentExploreDirection === 'OUTBOUND') {
+        document.getElementById('explore-results-title').innerText = `${airportMap[dep] || dep} 출발 ➔ ${mStr} 빈좌석이 있는 목적지`;
+      } else {
+        document.getElementById('explore-results-title').innerText = `해외 출발 ➔ ${airportMap[dep] || dep} 귀국 ${mStr} 빈좌석이 있는 항공편`;
+      }
+      document.getElementById('explore-results-subtitle').innerText = `스캔한 ${respData.scanned_count}개 노선 중 현재 ${respData.found_count}개 도시에서 마일리지 예약이 가능합니다.`;
+      document.getElementById('explore-badge-count').innerText = `${respData.found_count}개 도시 발견`;
 
       const grid = document.getElementById('destinations-grid');
       grid.innerHTML = '';
@@ -621,7 +672,7 @@
         grid.innerHTML = `
           <div class="col-span-3 text-center py-12 bg-white rounded-2xl border border-slate-200 p-8 text-slate-500">
             <i class="fa-regular fa-face-frown text-4xl text-slate-300 mb-3"></i>
-            <p class="font-bold text-slate-700">해당 조건으로 예약 가능한 목적지가 없습니다.</p>
+            <p class="font-bold text-slate-700">해당 조건으로 예약 가능한 항공편이 없습니다.</p>
             <p class="text-xs text-slate-400 mt-1">다른 월을 선택하시거나 일반석(X) 등급을 포함하여 다시 탐색해 보세요.</p>
           </div>
         `;
@@ -655,6 +706,16 @@
         const targetDate = validDates.length > 0 ? validDates[0] : (item.available_dates[0] || month + '01');
         const targetClass = hasFirst ? 'A' : (hasPrestige ? 'O' : 'X');
 
+        const depCode = item.departure || (currentExploreDirection === 'INBOUND' ? item.destination : dep);
+        const arrCode = item.destination || (currentExploreDirection === 'INBOUND' ? dep : item.destination);
+        const depName = item.departure_name || airportMap[depCode] || depCode;
+        const arrName = item.destination_name || airportMap[arrCode] || arrCode;
+        const cardTitle = (currentExploreDirection === 'INBOUND') ? depName : arrName;
+        const cardAirportCode = (currentExploreDirection === 'INBOUND') ? depCode : arrCode;
+        const routeLabel = `${depName} ➔ ${arrName}`;
+
+        const bookUrl = getKoreanAirBookingUrl(depCode, arrCode, targetDate, targetClass);
+
         const dateBadges = displayDates.slice(0, 6).map(d => {
           return `<span class="bg-slate-100 text-slate-700 text-xs px-2 py-0.5 rounded font-mono">${d.substring(4,6)}/${d.substring(6)}</span>`;
         }).join(' ');
@@ -664,10 +725,13 @@
         grid.innerHTML += `
           <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 hover:shadow-md hover:border-kal-blue transition flex flex-col justify-between">
             <div>
-              <div class="flex justify-between items-start mb-2">
+              <div class="flex justify-between items-start mb-1">
                 <div>
-                  <h4 class="font-black text-slate-800 text-lg">${item.destination_name}</h4>
-                  <span class="text-xs font-mono font-bold text-kal-blue bg-blue-50 px-2 py-0.5 rounded">${item.destination}</span>
+                  <h4 class="font-black text-slate-800 text-lg">${cardTitle}</h4>
+                  <div class="flex items-center space-x-1.5 mt-0.5">
+                    <span class="text-xs font-mono font-bold text-kal-blue bg-blue-50 px-2 py-0.5 rounded">${cardAirportCode}</span>
+                    <span class="text-[11px] text-slate-500 font-medium">${routeLabel}</span>
+                  </div>
                 </div>
                 <span class="text-xs px-2.5 py-1 rounded-full ${badgeClass}">${badgeText}</span>
               </div>
@@ -690,7 +754,7 @@
               <button onclick="showDestinationDetail('${item.destination}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2 px-3 rounded-lg transition text-center">
                 <i class="fa-solid fa-list-ul mr-1"></i> 일정표 보기
               </button>
-              <a href="${getKoreanAirBookingUrl(dep, item.destination, targetDate, targetClass)}" target="_blank" class="bg-kal-blue hover:bg-blue-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition text-center shadow-sm flex items-center justify-center space-x-1" title="해당 일자 대한항공 예매 사이트로 이동">
+              <a href="${bookUrl}" target="_blank" class="bg-kal-blue hover:bg-blue-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition text-center shadow-sm flex items-center justify-center space-x-1" title="해당 일자 대한항공 예매 사이트로 이동">
                 <span>예매하기 ➔</span>
               </a>
             </div>
@@ -700,14 +764,19 @@
     }
 
     function showDestinationDetail(destCode) {
-      const item = currentExploreData.find(d => d.destination === destCode);
+      const item = currentExploreData.find(d => d.destination === destCode || d.departure === destCode);
       if (!item) return;
 
       const todayStr = new Date().toLocaleDateString('ko-KR', {year:'numeric', month:'2-digit', day:'2-digit'}).replace(/[^0-9]/g, '');
       const nowTimeStr = new Date().toTimeString().slice(0, 5);
 
       const dep = document.getElementById('explore-dep').value;
-      document.getElementById('modal-detail-title').innerText = `${item.destination_name} (${destCode}) 잔여 보너스 좌석 상세`;
+      const depCode = item.departure || (currentExploreDirection === 'INBOUND' ? item.destination : dep);
+      const arrCode = item.destination || (currentExploreDirection === 'INBOUND' ? dep : item.destination);
+      const depName = item.departure_name || airportMap[depCode] || depCode;
+      const arrName = item.destination_name || airportMap[arrCode] || arrCode;
+
+      document.getElementById('modal-detail-title').innerText = `${depName} ➔ ${arrName} 잔여 보너스 좌석 상세`;
       document.getElementById('modal-detail-subtitle').innerText = `총 ${item.all_flights.length}개의 예약 가능한 항공편이 있습니다. (예약 클릭 시 해당 일자 예약 페이지로 연결)`;
 
       const tbody = document.getElementById('modal-detail-tbody');
@@ -716,7 +785,7 @@
       item.all_flights.forEach(f => {
         const isPast = f.date < todayStr || (f.date === todayStr && f.departure_time && f.departure_time <= nowTimeStr);
         const dStr = `${f.date.substring(0,4)}-${f.date.substring(4,6)}-${f.date.substring(6)}`;
-        const bookUrl = !isPast ? getKoreanAirBookingUrl(dep, destCode, f.date, f.booking_class) : '#';
+        const bookUrl = !isPast ? getKoreanAirBookingUrl(depCode, arrCode, f.date, f.booking_class) : '#';
         const actionBtn = isPast
           ? `<span class="text-xs bg-slate-200 text-slate-400 font-semibold px-2 py-1 rounded cursor-not-allowed">출발 완료</span>`
           : `<a href="${bookUrl}" target="_blank" class="text-xs bg-kal-blue hover:bg-blue-600 text-white font-bold px-2.5 py-1 rounded shadow-sm" title="${dStr} 항공권 예매 바로가기">예약</a>`;

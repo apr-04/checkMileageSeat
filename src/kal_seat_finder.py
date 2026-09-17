@@ -223,10 +223,12 @@ class KALAwardFinder:
         destinations: List[str],
         year_month: str,
         target_classes: Optional[List[str]] = None,
-        airport_names: Optional[Dict[str, str]] = None
+        airport_names: Optional[Dict[str, str]] = None,
+        direction: str = "OUTBOUND"
     ) -> List[Dict[str, Any]]:
         """
-        여러 목적지를 순차 조회하여 보너스 좌석이 남아있는 목적지 목록을 추출합니다.
+        여러 목적지를 순차 조회하여 보너스 좌석이 남아있는 노선 목록을 추출합니다.
+        (출국편: dep ➔ destinations / 귀국편: destinations ➔ dep)
         
         :return: 좌석이 존재하는 목적지별 집계 데이터 목록
         """
@@ -234,19 +236,34 @@ class KALAwardFinder:
             airport_names = {}
 
         discovered_destinations = []
+        KST = datetime.timezone(datetime.timedelta(hours=9))
+        now = datetime.datetime.now(KST)
+        today_str = now.strftime("%Y%m%d")
+        now_time_str = now.strftime("%H:%M")
 
-        for arr in destinations:
-            if arr == dep:
+        for city in destinations:
+            if city == dep:
                 continue
 
+            scan_dep = city if direction == "INBOUND" else dep
+            scan_arr = dep if direction == "INBOUND" else city
+
             try:
-                raw_seats = await self.fetch_month_seats(dep, arr, year_month)
+                raw_seats = await self.fetch_month_seats(scan_dep, scan_arr, year_month)
                 # 필터링
                 avail_flights = []
                 avail_classes = set()
                 avail_dates = set()
 
                 for s in raw_seats:
+                    f_date = s.get("date", "")
+                    f_time = s.get("departure_time", "")
+                    # 과거 날짜 및 이미 출발한 당일 항공편 제외
+                    if f_date < today_str:
+                        s["available"] = False
+                    elif f_date == today_str and f_time and f_time <= now_time_str:
+                        s["available"] = False
+
                     if not s.get("available"):
                         continue
                     b_cls = s.get("booking_class", "")
@@ -255,12 +272,16 @@ class KALAwardFinder:
 
                     avail_flights.append(s)
                     avail_classes.add(b_cls)
-                    avail_dates.add(s.get("date", ""))
+                    avail_dates.add(f_date)
 
                 if avail_flights:
-                    arr_name = airport_names.get(arr, raw_seats[0].get("arrival_name", arr))
+                    dep_name = airport_names.get(scan_dep, raw_seats[0].get("departure_name", scan_dep))
+                    arr_name = airport_names.get(scan_arr, raw_seats[0].get("arrival_name", scan_arr))
                     discovered_destinations.append({
-                        "destination": arr,
+                        "direction": direction,
+                        "departure": scan_dep,
+                        "departure_name": dep_name,
+                        "destination": scan_arr,
                         "destination_name": arr_name,
                         "total_available_seats": len(avail_flights),
                         "available_classes": sorted(list(avail_classes)),
@@ -270,10 +291,10 @@ class KALAwardFinder:
                     })
 
                 # 부하 방지용 짧은 딜레이
-                await asyncio.sleep(0.3)
+                await asyncio.sleep(0.25)
 
             except Exception as e:
-                logger.error(f"{dep} -> {arr} 목적지 조회 실패: {e}")
+                logger.error(f"[{direction}] {scan_dep} -> {scan_arr} 조회 실패: {e}")
 
         # 잔여 좌석 많은 순 정렬
         discovered_destinations.sort(key=lambda x: x["total_available_seats"], reverse=True)

@@ -187,6 +187,8 @@ def explore_destinations_api():
     else:
         target_dests = ["NRT", "KIX", "FUK", "BKK", "DAD", "SIN", "CDG", "HNL"]
 
+    direction = data.get("direction", "OUTBOUND")
+
     async def do_explore():
         finder = KALAwardFinder(headless=True)
         try:
@@ -195,7 +197,8 @@ def explore_destinations_api():
                 destinations=target_dests,
                 year_month=month,
                 target_classes=classes,
-                airport_names=MAJOR_AIRPORTS
+                airport_names=MAJOR_AIRPORTS,
+                direction=direction
             )
         finally:
             await finder.close()

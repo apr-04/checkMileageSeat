@@ -57,35 +57,57 @@ async def build_static_dataset(max_months: int = 12, target_departure: str = "IC
         "SYD", "AKL"
     ]
 
+    # 스캔 대상 노선 목록 (출국편: ICN ➔ 해외 / 귀국편: 해외 ➔ ICN)
+    routes_to_scan = []
+    # 1. 서울 출발 (OUTBOUND)
+    for city in key_destinations:
+        if city != target_departure:
+            routes_to_scan.append({
+                "direction": "OUTBOUND",
+                "dep": target_departure,
+                "arr": city
+            })
+    # 2. 서울 귀국 (INBOUND)
+    for city in key_destinations:
+        if city != target_departure:
+            routes_to_scan.append({
+                "direction": "INBOUND",
+                "dep": city,
+                "arr": target_departure
+            })
+
     finder = KALAwardFinder(headless=True)
     all_routes_data = {}
     destinations_summary = []
 
     try:
-        logger.info(f"GitHub Pages 데이터 빌드 시작: 출발지={target_departure}, 월 목록={months_to_scan}, 목적지={len(key_destinations)}개")
+        logger.info(f"GitHub Pages 데이터 빌드 시작: 대상 노선={len(routes_to_scan)}개 (출국 {len(key_destinations)}개 + 귀국 {len(key_destinations)}개), 월 목록={months_to_scan}")
 
-        for arr in key_destinations:
-            if arr == target_departure:
-                continue
+        today_str = now.strftime("%Y%m%d")
+        now_time_str = now.strftime("%H:%M")
 
+        for r in routes_to_scan:
+            direction = r["direction"]
+            dep = r["dep"]
+            arr = r["arr"]
+            dep_name = MAJOR_AIRPORTS.get(dep, dep)
             arr_name = MAJOR_AIRPORTS.get(arr, arr)
-            logger.info(f"스캔 중: {target_departure} ➔ {arr_name}({arr}) ...")
 
-            route_key = f"{target_departure}_{arr}"
+            route_key = f"{dep}_{arr}"
+            logger.info(f"스캔 중 [{direction}]: {dep_name}({dep}) ➔ {arr_name}({arr}) ...")
+
             all_routes_data[route_key] = {
-                "departure": target_departure,
-                "departure_name": MAJOR_AIRPORTS.get(target_departure, target_departure),
+                "direction": direction,
+                "departure": dep,
+                "departure_name": dep_name,
                 "arrival": arr,
                 "arrival_name": arr_name,
                 "flights": []
             }
 
-            today_str = now.strftime("%Y%m%d")
-            now_time_str = now.strftime("%H:%M")
-
             for ym in months_to_scan:
                 try:
-                    month_seats = await finder.fetch_month_seats(target_departure, arr, ym)
+                    month_seats = await finder.fetch_month_seats(dep, arr, ym)
 
                     # 과거 날짜 및 이미 출발한 당일 항공편 제외 처리
                     for s in month_seats:
@@ -102,7 +124,9 @@ async def build_static_dataset(max_months: int = 12, target_departure: str = "IC
 
                     if avail:
                         destinations_summary.append({
-                            "departure": target_departure,
+                            "direction": direction,
+                            "departure": dep,
+                            "departure_name": dep_name,
                             "destination": arr,
                             "destination_name": arr_name,
                             "month": ym,
@@ -112,9 +136,9 @@ async def build_static_dataset(max_months: int = 12, target_departure: str = "IC
                             "sample_flights": [f for f in avail if f["booking_class"] in ["X", "O", "A"]][:10] or avail[:10]
                         })
 
-                    await asyncio.sleep(0.3)
+                    await asyncio.sleep(0.25)
                 except Exception as e:
-                    logger.error(f"  {target_departure}->{arr} {ym} 실패: {e}")
+                    logger.error(f"  [{direction}] {dep}->{arr} {ym} 실패: {e}")
 
         # 메타데이터 및 최종 저장 객체
         dataset = {
