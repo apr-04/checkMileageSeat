@@ -118,9 +118,18 @@ async def build_static_dataset(max_months: int = 12, target_departure: str = "IC
                         elif f_date == today_str and f_time and f_time <= now_time_str:
                             s["available"] = False
 
-                    # 유효한 빈좌석만 필터링
+                    # 유효한 빈좌석만 필터링 및 경량화 저장
                     avail = [s for s in month_seats if s.get("available")]
-                    all_routes_data[route_key]["flights"].extend(month_seats)
+                    compact_avail = [
+                        {
+                            "date": s["date"],
+                            "flight_number": s["flight_number"],
+                            "departure_time": s.get("departure_time", ""),
+                            "booking_class": s["booking_class"]
+                        }
+                        for s in avail
+                    ]
+                    all_routes_data[route_key]["flights"].extend(compact_avail)
 
                     if avail:
                         destinations_summary.append({
@@ -132,8 +141,7 @@ async def build_static_dataset(max_months: int = 12, target_departure: str = "IC
                             "month": ym,
                             "total_seats": len(avail),
                             "classes": sorted(list(set(s["booking_class"] for s in avail))),
-                            "dates": sorted(list(set(s["date"] for s in avail))),
-                            "sample_flights": [f for f in avail if f["booking_class"] in ["X", "O", "A"]][:10] or avail[:10]
+                            "dates": sorted(list(set(s["date"] for s in avail)))
                         })
 
                     await asyncio.sleep(0.25)
@@ -153,9 +161,9 @@ async def build_static_dataset(max_months: int = 12, target_departure: str = "IC
         }
 
         with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
-            json.dump(dataset, f, ensure_ascii=False, indent=2)
+            json.dump(dataset, f, ensure_ascii=False, separators=(',', ':'))
 
-        logger.info(f"성공! 정적 데이터셋이 저장되었습니다: {OUTPUT_PATH}")
+        logger.info(f"성공! 경량화된 정적 데이터셋이 저장되었습니다: {OUTPUT_PATH}")
 
     finally:
         await finder.close()

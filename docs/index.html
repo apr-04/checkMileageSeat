@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>대한항공 마일리지 빈좌석 실시간 탐색기 (GitHub Web)</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -85,15 +88,25 @@
         </div>
 
         <!-- Direction Segmented Control -->
-        <div class="mt-4 flex flex-wrap items-center gap-3">
-          <span class="text-xs font-bold text-slate-300">여정 방향:</span>
-          <div class="inline-flex rounded-xl bg-black/25 p-1 border border-white/20 shadow-inner">
-            <button type="button" id="dir-btn-outbound" onclick="setDirection('OUTBOUND')" class="px-4 py-2 text-xs font-bold rounded-lg transition shadow-sm bg-white text-kal-navy">
-              <i class="fa-solid fa-plane-departure mr-1.5 text-kal-blue"></i> 서울 출발 (인천 ➔ 해외)
+        <div class="mt-5 p-3 rounded-2xl bg-black/35 border border-white/25 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shadow-inner">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-black text-white/90 mr-1 flex items-center whitespace-nowrap">
+              <i class="fa-solid fa-route mr-1.5 text-amber-300"></i> 여정 방향:
+            </span>
+            <button type="button" id="dir-btn-outbound" onclick="setDirection('OUTBOUND')" class="flex-1 md:flex-none px-4 py-2.5 text-xs font-black rounded-xl transition shadow-md bg-white text-kal-navy flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-plane-departure text-kal-blue text-sm"></i>
+              <span>🛫 서울 출발 (출국편)</span>
+              <span id="badge-outbound-count" class="bg-blue-100 text-kal-navy px-2 py-0.5 rounded-full text-[11px] font-bold">-</span>
             </button>
-            <button type="button" id="dir-btn-inbound" onclick="setDirection('INBOUND')" class="px-4 py-2 text-xs font-bold rounded-lg transition text-slate-200 hover:text-white hover:bg-white/10">
-              <i class="fa-solid fa-plane-arrival mr-1.5 text-emerald-400"></i> 서울 귀국 (해외 ➔ 인천)
+            <button type="button" id="dir-btn-inbound" onclick="setDirection('INBOUND')" class="flex-1 md:flex-none px-4 py-2.5 text-xs font-black rounded-xl transition text-slate-200 hover:text-white hover:bg-white/10 flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-plane-arrival text-emerald-400 text-sm"></i>
+              <span>🛬 서울 귀국 (귀국편)</span>
+              <span id="badge-inbound-count" class="bg-emerald-500/30 text-emerald-200 border border-emerald-400/40 px-2 py-0.5 rounded-full text-[11px] font-bold">-</span>
             </button>
+          </div>
+          <div class="text-xs text-amber-200/90 font-medium px-1 flex items-center">
+            <i class="fa-solid fa-circle-info mr-1.5 text-amber-300"></i>
+            <span id="dir-guide-text">현재 <b>[서울 ➔ 해외]</b> 출국편 좌석을 조회 중입니다.</span>
           </div>
         </div>
 
@@ -175,9 +188,24 @@
     <!-- TAB 2: Specific Route Search -->
     <div id="view-search" class="hidden space-y-6">
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center">
+        <h2 class="text-base font-bold text-slate-800 mb-2 flex items-center">
           <i class="fa-solid fa-magnifying-glass text-kal-blue mr-2"></i> 특정 노선 상세 일자별 좌석 조회
         </h2>
+        <p class="text-xs text-slate-500 mb-4">원하는 출발지/도착지 및 탑승월을 선택하면 해당 노선의 모든 항공편과 마일리지 잔여 좌석을 확인할 수 있습니다.</p>
+
+        <!-- Quick Destination Chips -->
+        <div class="mb-4 flex flex-wrap items-center gap-1.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+          <span class="text-xs font-bold text-slate-600 mr-1 flex items-center"><i class="fa-solid fa-bolt text-amber-500 mr-1"></i>인기 노선 바로보기:</span>
+          <button type="button" onclick="selectRoutePair('ICN', 'NRT')" class="px-2.5 py-1 text-xs font-semibold bg-white hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 transition shadow-xs">🇯🇵 도쿄</button>
+          <button type="button" onclick="selectRoutePair('ICN', 'KIX')" class="px-2.5 py-1 text-xs font-semibold bg-white hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 transition shadow-xs">🇯🇵 오사카</button>
+          <button type="button" onclick="selectRoutePair('ICN', 'BKK')" class="px-2.5 py-1 text-xs font-semibold bg-white hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 transition shadow-xs">🌴 방콕</button>
+          <button type="button" onclick="selectRoutePair('ICN', 'DAD')" class="px-2.5 py-1 text-xs font-semibold bg-white hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 transition shadow-xs">🌴 다낭</button>
+          <button type="button" onclick="selectRoutePair('ICN', 'GUM')" class="px-2.5 py-1 text-xs font-semibold bg-white hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 transition shadow-xs">🌴 괌</button>
+          <button type="button" onclick="selectRoutePair('ICN', 'HNL')" class="px-2.5 py-1 text-xs font-semibold bg-white hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 transition shadow-xs">🌊 하와이</button>
+          <button type="button" onclick="selectRoutePair('ICN', 'LAX')" class="px-2.5 py-1 text-xs font-semibold bg-white hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 transition shadow-xs">🇺🇸 LA</button>
+          <button type="button" onclick="selectRoutePair('ICN', 'JFK')" class="px-2.5 py-1 text-xs font-semibold bg-white hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 transition shadow-xs">🇺🇸 뉴욕</button>
+          <button type="button" onclick="selectRoutePair('ICN', 'CDG')" class="px-2.5 py-1 text-xs font-semibold bg-white hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 transition shadow-xs">🇫🇷 파리</button>
+        </div>
 
         <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
           <div class="md:col-span-2">
@@ -290,6 +318,16 @@
         </div>
         <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
           <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <!-- Route Direction Switcher inside Modal -->
+      <div id="modal-route-switch" class="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+        <button type="button" id="modal-btn-outbound" class="flex-1 py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-plane-departure"></i> <span id="modal-lbl-outbound">🛫 출국편 (서울 ➔ 해외)</span>
+        </button>
+        <button type="button" id="modal-btn-inbound" class="flex-1 py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-plane-arrival"></i> <span id="modal-lbl-inbound">🛬 귀국편 (해외 ➔ 서울)</span>
         </button>
       </div>
 
@@ -430,14 +468,19 @@
 
     async function loadData() {
       try {
-        const res = await fetch('./data/latest_seats.json');
+        const urlParams = new URLSearchParams(window.location.search);
+        const hash = window.location.hash.toLowerCase();
+        if (urlParams.get('dir') === 'inbound' || hash.includes('inbound')) {
+          currentDirection = 'INBOUND';
+        }
+
+        const res = await fetch('./data/latest_seats.json?v=' + Date.now(), { cache: 'no-cache' });
         if (!res.ok) throw new Error('Data file not found');
         globalDataset = await res.json();
         renderPage();
       } catch (e) {
         console.warn('Could not load latest_seats.json:', e);
         document.getElementById('last-updated').innerText = '데이터 파일 없음 (Action 실행 필요)';
-        // Show demo message
         document.getElementById('exp-cards-grid').innerHTML = `
           <div class="col-span-3 text-center py-12 bg-white rounded-2xl border border-slate-200 p-8">
             <i class="fa-solid fa-cloud-arrow-down text-3xl text-kal-blue mb-3"></i>
@@ -452,20 +495,40 @@
 
     function setDirection(dir) {
       currentDirection = dir;
+      window.location.hash = (dir === 'INBOUND' ? 'inbound' : 'outbound');
       const btnOut = document.getElementById('dir-btn-outbound');
       const btnIn = document.getElementById('dir-btn-inbound');
       const lblDepOrArr = document.getElementById('lbl-dep-or-arr');
+      const guideText = document.getElementById('dir-guide-text');
 
       if (dir === 'OUTBOUND') {
-        btnOut.className = 'px-4 py-2 text-xs font-bold rounded-lg transition shadow-sm bg-white text-kal-navy';
-        btnIn.className = 'px-4 py-2 text-xs font-bold rounded-lg transition text-slate-200 hover:text-white hover:bg-white/10';
-        if (lblDepOrArr) lblDepOrArr.innerText = '출발지 (Departure)';
+        btnOut.className = 'flex-1 md:flex-none px-4 py-2.5 text-xs font-black rounded-xl transition shadow-md bg-white text-kal-navy flex items-center justify-center space-x-2';
+        btnIn.className = 'flex-1 md:flex-none px-4 py-2.5 text-xs font-black rounded-xl transition text-slate-200 hover:text-white hover:bg-white/10 flex items-center justify-center space-x-2';
+        if (lblDepOrArr) lblDepOrArr.innerText = '기준 공항 (출발지: 인천/김포)';
+        if (guideText) guideText.innerHTML = '현재 <b>[서울(인천) ➔ 해외]</b> 출국편 좌석을 조회 중입니다.';
       } else {
-        btnIn.className = 'px-4 py-2 text-xs font-bold rounded-lg transition shadow-sm bg-white text-emerald-900 font-black';
-        btnOut.className = 'px-4 py-2 text-xs font-bold rounded-lg transition text-slate-200 hover:text-white hover:bg-white/10';
-        if (lblDepOrArr) lblDepOrArr.innerText = '도착지 (Arrival)';
+        btnIn.className = 'flex-1 md:flex-none px-4 py-2.5 text-xs font-black rounded-xl transition shadow-md bg-emerald-500 text-white ring-2 ring-emerald-300 flex items-center justify-center space-x-2';
+        btnOut.className = 'flex-1 md:flex-none px-4 py-2.5 text-xs font-black rounded-xl transition text-slate-200 hover:text-white hover:bg-white/10 flex items-center justify-center space-x-2';
+        if (lblDepOrArr) lblDepOrArr.innerText = '기준 공항 (도착지: 인천/김포)';
+        if (guideText) guideText.innerHTML = '현재 <b>[해외 ➔ 서울(인천)]</b> 귀국편 마일리지 좌석을 조회 중입니다.';
       }
       applyExploreFilter();
+    }
+
+    function updateDirectionCounts(month) {
+      if (!globalDataset || !globalDataset.destinations_summary) return;
+      const selMonth = month || document.getElementById('exp-month').value;
+      const outCount = (globalDataset.destinations_summary || []).filter(item => 
+        (item.direction || 'OUTBOUND') === 'OUTBOUND' && item.month === selMonth && item.total_seats > 0
+      ).length;
+      const inCount = (globalDataset.destinations_summary || []).filter(item => 
+        (item.direction || 'OUTBOUND') === 'INBOUND' && item.month === selMonth && item.total_seats > 0
+      ).length;
+
+      const badgeOut = document.getElementById('badge-outbound-count');
+      const badgeIn = document.getElementById('badge-inbound-count');
+      if (badgeOut) badgeOut.innerText = `${outCount}개 도시`;
+      if (badgeIn) badgeIn.innerText = `${inCount}개 도시`;
     }
 
     function renderPage() {
@@ -508,7 +571,7 @@
       depSelect.value = 'ICN';
       arrSelect.value = 'NRT';
 
-      applyExploreFilter();
+      setDirection(currentDirection);
       renderSpecificRoute();
     }
 
@@ -521,12 +584,24 @@
       renderSpecificRoute();
     }
 
+    function selectRoutePair(dep, arr) {
+      const depSelect = document.getElementById('route-dep');
+      const arrSelect = document.getElementById('route-arr');
+      if (depSelect && arrSelect) {
+        depSelect.value = dep;
+        arrSelect.value = arr;
+        renderSpecificRoute();
+      }
+    }
+
     function applyExploreFilter() {
       if (!globalDataset) return;
 
       const selMonth = document.getElementById('exp-month').value;
       const selRegion = document.getElementById('exp-region').value;
       const selectedClasses = ['X', 'O', 'A', 'Z'].filter(c => document.getElementById(`class-${c}`).checked);
+
+      updateDirectionCounts(selMonth);
 
       // Get allowed airports for region
       let allowedAirports = null;
@@ -538,7 +613,7 @@
       let matched = (globalDataset.destinations_summary || []).filter(item => {
         if (item.month !== selMonth) return false;
         
-        // 여정 방향 필터링 (기존 데이터 호환을 위해 direction 없을 시 OUTBOUND 간주)
+        // 여정 방향 필터링
         const itemDir = item.direction || 'OUTBOUND';
         if (itemDir !== currentDirection) return false;
 
@@ -557,7 +632,7 @@
       const mStr = `${selMonth.substring(0,4)}년 ${selMonth.substring(4)}월`;
       if (currentDirection === 'OUTBOUND') {
         document.getElementById('exp-results-title').innerText = `서울/인천(ICN) 출발 ➔ ${mStr} 해외 빈좌석 여행지`;
-        document.getElementById('exp-results-sub').innerText = `선택하신 조건으로 현재 총 ${matched.length}개 도시에서 마일리지 좌석이 확인되었습니다.`;
+        document.getElementById('exp-results-sub').innerText = `선택하신 조건으로 현재 총 ${matched.length}개 도시에서 출국 마일리지 좌석이 확인되었습니다.`;
       } else {
         document.getElementById('exp-results-title').innerText = `해외 출발 ➔ 서울/인천(ICN) 귀국 ${mStr} 빈좌석 항공편`;
         document.getElementById('exp-results-sub').innerText = `서울로 들어오는 귀국편 마일리지 좌석이 총 ${matched.length}개 해외 도시에서 확인되었습니다.`;
@@ -570,8 +645,9 @@
       if (matched.length === 0) {
         grid.innerHTML = `
           <div class="col-span-3 text-center py-12 bg-white rounded-2xl border border-slate-200 p-8 text-slate-500">
+            <i class="fa-solid fa-plane-circle-exclamation text-3xl text-amber-500 mb-3"></i>
             <p class="font-bold text-slate-700">선택하신 조건으로 예약 가능한 ${currentDirection === 'INBOUND' ? '귀국편' : '목적지'}가 없습니다.</p>
-            <p class="text-xs text-slate-400 mt-1">다른 월이나 일반석(X) 등급을 포함하여 다시 확인해 보세요.</p>
+            <p class="text-xs text-slate-400 mt-1">다른 탑승월이나 일반석(X) 등급을 포함하여 다시 확인해 보세요.</p>
           </div>
         `;
         return;
@@ -620,14 +696,78 @@
         }).join(' ');
         const moreCount = displayDates.length > 5 ? `<span class="text-xs text-slate-400 font-medium">+${displayDates.length - 5}일</span>` : '';
 
+        // 반대 방향 (귀국편 / 출국편) 연계 정보 탐색
+        const pairedCity = (currentDirection === 'OUTBOUND') ? arrCode : depCode;
+        const oppDir = (currentDirection === 'OUTBOUND') ? 'INBOUND' : 'OUTBOUND';
+        const pairedItem = (globalDataset.destinations_summary || []).find(x => 
+          (x.direction || 'OUTBOUND') === oppDir &&
+          x.month === item.month &&
+          ((oppDir === 'INBOUND' && x.departure === pairedCity) || (oppDir === 'OUTBOUND' && x.destination === pairedCity))
+        );
+
+        let pairedSectionHtml = '';
+        if (currentDirection === 'OUTBOUND') {
+          if (pairedItem && pairedItem.total_seats > 0) {
+            pairedSectionHtml = `
+              <div class="mt-3 pt-2.5 border-t border-dashed border-slate-200 bg-emerald-50/70 p-2.5 rounded-xl flex items-center justify-between text-xs">
+                <div class="flex items-center space-x-1.5">
+                  <span class="px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900 text-[10px] font-black">🛬 귀국편 연계</span>
+                  <span class="text-slate-700 font-semibold">${cardTitle} ➔ 인천:</span>
+                  <span class="font-black text-emerald-700">${pairedItem.total_seats}석 가능</span>
+                </div>
+                <button type="button" onclick="showModal('${pairedCity}', 'ICN', '${item.month}')" class="text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded transition shadow-xs flex items-center space-x-1" title="해외에서 서울로 들어오는 귀국편 일정표 보기">
+                  <span>귀국 일정표 ➔</span>
+                </button>
+              </div>
+            `;
+          } else {
+            pairedSectionHtml = `
+              <div class="mt-3 pt-2.5 border-t border-dashed border-slate-200 text-[11px] text-slate-400 flex items-center space-x-1">
+                <i class="fa-solid fa-circle-exclamation text-slate-300"></i>
+                <span>해당 월 ${cardTitle} ➔ 서울 귀국편 잔여 좌석 없음</span>
+              </div>
+            `;
+          }
+        } else {
+          // INBOUND View
+          if (pairedItem && pairedItem.total_seats > 0) {
+            pairedSectionHtml = `
+              <div class="mt-3 pt-2.5 border-t border-dashed border-slate-200 bg-blue-50/70 p-2.5 rounded-xl flex items-center justify-between text-xs">
+                <div class="flex items-center space-x-1.5">
+                  <span class="px-2 py-0.5 rounded-full bg-blue-200 text-kal-navy text-[10px] font-black">🛫 출국편 연계</span>
+                  <span class="text-slate-700 font-semibold">인천 ➔ ${cardTitle}:</span>
+                  <span class="font-black text-kal-blue">${pairedItem.total_seats}석 가능</span>
+                </div>
+                <button type="button" onclick="showModal('ICN', '${pairedCity}', '${item.month}')" class="text-[11px] bg-kal-blue hover:bg-blue-600 text-white font-bold px-2.5 py-1 rounded transition shadow-xs flex items-center space-x-1" title="서울에서 해외로 나가는 출국편 일정표 보기">
+                  <span>출국 일정표 ➔</span>
+                </button>
+              </div>
+            `;
+          } else {
+            pairedSectionHtml = `
+              <div class="mt-3 pt-2.5 border-t border-dashed border-slate-200 text-[11px] text-slate-400 flex items-center space-x-1">
+                <i class="fa-solid fa-circle-exclamation text-slate-300"></i>
+                <span>해당 월 서울 ➔ ${cardTitle} 출국편 잔여 좌석 없음</span>
+              </div>
+            `;
+          }
+        }
+
+        const dirBadge = (currentDirection === 'INBOUND')
+          ? `<span class="bg-emerald-100 text-emerald-800 text-[11px] font-black px-2 py-0.5 rounded-md"><i class="fa-solid fa-plane-arrival mr-1"></i>서울 귀국</span>`
+          : `<span class="bg-blue-100 text-blue-800 text-[11px] font-black px-2 py-0.5 rounded-md"><i class="fa-solid fa-plane-departure mr-1"></i>서울 출발</span>`;
+
         grid.innerHTML += `
           <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition flex flex-col justify-between">
             <div>
               <div class="flex justify-between items-start mb-1">
                 <div>
+                  <div class="flex items-center space-x-1.5 mb-1">
+                    ${dirBadge}
+                    <span class="text-xs font-mono font-bold text-kal-navy bg-slate-100 px-1.5 py-0.5 rounded">${cardAirportCode}</span>
+                  </div>
                   <h4 class="font-black text-slate-800 text-lg">${cardTitle}</h4>
                   <div class="flex items-center space-x-1.5 mt-0.5">
-                    <span class="text-xs font-mono font-bold text-kal-blue bg-blue-50 px-2 py-0.5 rounded">${cardAirportCode}</span>
                     <span class="text-[11px] text-slate-500 font-medium">${routeLabel}</span>
                   </div>
                 </div>
@@ -646,6 +786,8 @@
                   </div>
                 </div>
               </div>
+
+              ${pairedSectionHtml}
             </div>
 
             <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
@@ -668,14 +810,41 @@
       const depName = globalDataset.airports?.[dep] || dep;
       const arrName = globalDataset.airports?.[arr] || arr;
 
+      const isOutbound = (dep === 'ICN' || dep === 'GMP' || dep === 'PUS');
+      const foreignAirport = isOutbound ? arr : dep;
+      const foreignName = isOutbound ? arrName : depName;
+
       document.getElementById('modal-title').innerText = `${depName} (${dep}) ➔ ${arrName} (${arr}) 마일리지 좌석 상세`;
       document.getElementById('modal-sub').innerText = `${month.substring(0,4)}년 ${month.substring(4)}월 운항 항공편 현황 (예약 클릭 시 해당 일자로 대한항공 예매 연결)`;
+
+      // Modal Route Switcher Buttons
+      const btnOut = document.getElementById('modal-btn-outbound');
+      const btnIn = document.getElementById('modal-btn-inbound');
+      const lblOut = document.getElementById('modal-lbl-outbound');
+      const lblIn = document.getElementById('modal-lbl-inbound');
+
+      if (lblOut) lblOut.innerText = `🛫 출국편: 인천 ➔ ${foreignName}`;
+      if (lblIn) lblIn.innerText = `🛬 귀국편: ${foreignName} ➔ 인천`;
+
+      if (btnOut) btnOut.onclick = () => showModal('ICN', foreignAirport, month);
+      if (btnIn) btnIn.onclick = () => showModal(foreignAirport, 'ICN', month);
+
+      if (isOutbound) {
+        if (btnOut) btnOut.className = 'flex-1 py-2 px-3 rounded-lg text-xs font-black transition shadow-sm bg-white text-kal-navy border border-kal-blue/30 flex items-center justify-center space-x-1.5';
+        if (btnIn) btnIn.className = 'flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 flex items-center justify-center space-x-1.5';
+      } else {
+        if (btnIn) btnIn.className = 'flex-1 py-2 px-3 rounded-lg text-xs font-black transition shadow-sm bg-emerald-600 text-white flex items-center justify-center space-x-1.5';
+        if (btnOut) btnOut.className = 'flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 flex items-center justify-center space-x-1.5';
+      }
 
       const tbody = document.getElementById('modal-tbody');
       tbody.innerHTML = '';
 
       if (!route || !route.flights || route.flights.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">잔여 좌석이 없습니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">
+          <i class="fa-regular fa-face-frown text-2xl mb-2 text-slate-300 block"></i>
+          선택하신 <b>${month.substring(0,4)}년 ${month.substring(4)}월</b>에는 <b>${depName} ➔ ${arrName}</b> 잔여 좌석이 없습니다.
+        </td></tr>`;
         document.getElementById('modal-detail').classList.remove('hidden');
         return;
       }
@@ -684,24 +853,34 @@
       const nowTimeStr = new Date().toTimeString().slice(0, 5);
 
       const monthFlights = (route.flights || []).filter(f => {
-        if (!f.date || !f.date.startsWith(month) || !f.available) return false;
-        if (f.date < todayStr) return false;
-        if (f.date === todayStr && f.departure_time && f.departure_time <= nowTimeStr) return false;
+        const fDate = f.d || f.date;
+        const fTime = f.t || f.departure_time;
+        if (!fDate || !fDate.startsWith(month)) return false;
+        if (f.available === false) return false;
+        if (fDate < todayStr) return false;
+        if (fDate === todayStr && fTime && fTime <= nowTimeStr) return false;
         return true;
       });
 
       if (monthFlights.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">예약 가능한 잔여 좌석이 없습니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">
+          <i class="fa-regular fa-face-frown text-2xl mb-2 text-slate-300 block"></i>
+          선택하신 <b>${month.substring(0,4)}년 ${month.substring(4)}월</b>에는 <b>${depName} ➔ ${arrName}</b> 예약 가능한 잔여 좌석이 없습니다.
+        </td></tr>`;
       } else {
         monthFlights.forEach(f => {
-          const dStr = `${f.date.substring(0,4)}-${f.date.substring(4,6)}-${f.date.substring(6)}`;
-          const bookUrl = getKoreanAirBookingUrl(dep, arr, f.date, f.booking_class);
+          const fDate = f.d || f.date;
+          const fNum = f.fn || f.flight_number;
+          const fTime = f.t || f.departure_time || '-';
+          const fClass = f.c || f.booking_class;
+          const dStr = `${fDate.substring(0,4)}-${fDate.substring(4,6)}-${fDate.substring(6)}`;
+          const bookUrl = getKoreanAirBookingUrl(dep, arr, fDate, fClass);
           tbody.innerHTML += `
             <tr class="hover:bg-slate-50">
               <td class="py-2.5 px-3 font-semibold text-slate-800">${dStr}</td>
-              <td class="py-2.5 px-3 font-bold text-kal-navy">${f.flight_number}</td>
-              <td class="py-2.5 px-3 text-slate-600">${f.departure_time || '-'}</td>
-              <td class="py-2.5 px-3 font-semibold text-emerald-700">${CLASS_LABELS[f.booking_class] || f.booking_class} (${f.booking_class})</td>
+              <td class="py-2.5 px-3 font-bold text-kal-navy">${fNum}</td>
+              <td class="py-2.5 px-3 text-slate-600">${fTime}</td>
+              <td class="py-2.5 px-3 font-semibold text-emerald-700">${CLASS_LABELS[fClass] || fClass} (${fClass})</td>
               <td class="py-2.5 px-3 text-right">
                 <a href="${bookUrl}" target="_blank" class="text-xs bg-kal-blue hover:bg-blue-600 text-white font-bold px-2.5 py-1 rounded shadow-sm" title="${dStr} 항공권 예매 바로가기">예약</a>
               </td>
@@ -739,38 +918,48 @@
       const todayStr = new Date().toLocaleDateString('ko-KR', {year:'numeric', month:'2-digit', day:'2-digit'}).replace(/[^0-9]/g, '');
       const nowTimeStr = new Date().toTimeString().slice(0, 5);
 
-      const flights = route.flights.filter(f => f.date && f.date.startsWith(month));
+      const flights = (route.flights || []).filter(f => {
+        const fDate = f.d || f.date;
+        return fDate && fDate.startsWith(month);
+      });
       const availCount = flights.filter(f => {
-        if (!f.available) return false;
-        if (f.date < todayStr) return false;
-        if (f.date === todayStr && f.departure_time && f.departure_time <= nowTimeStr) return false;
+        const fDate = f.d || f.date;
+        const fTime = f.t || f.departure_time;
+        if (f.available === false) return false;
+        if (fDate < todayStr) return false;
+        if (fDate === todayStr && fTime && fTime <= nowTimeStr) return false;
         return true;
       }).length;
-      document.getElementById('route-count-badge').innerText = `총 ${flights.length}편 중 잔여좌석 ${availCount}편`;
+      document.getElementById('route-count-badge').innerText = `총 ${flights.length}편 운항 중 잔여좌석 ${availCount}편`;
 
       flights.forEach(f => {
-        const dStr = `${f.date.substring(0,4)}-${f.date.substring(4,6)}-${f.date.substring(6)}`;
-        const isPast = f.date < todayStr || (f.date === todayStr && f.departure_time && f.departure_time <= nowTimeStr);
+        const fDate = f.d || f.date;
+        const fNum = f.fn || f.flight_number;
+        const fTime = f.t || f.departure_time || '-';
+        const fClass = f.c || f.booking_class;
+        const dStr = `${fDate.substring(0,4)}-${fDate.substring(4,6)}-${fDate.substring(6)}`;
+        const isPast = fDate < todayStr || (fDate === todayStr && fTime && fTime <= nowTimeStr);
+        const isAvail = f.available !== false && !isPast;
         let statusBadge;
         if (isPast) {
           statusBadge = `<span class="bg-slate-100 text-slate-400 text-xs px-2 py-0.5 rounded-full">운항종료</span>`;
-        } else if (f.available) {
+        } else if (isAvail) {
           statusBadge = `<span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-check mr-1"></i>가능</span>`;
         } else {
           statusBadge = `<span class="bg-slate-100 text-slate-400 text-xs px-2 py-0.5 rounded-full">매진</span>`;
         }
 
-        const bookUrl = (!isPast && f.available) ? getKoreanAirBookingUrl(dep, arr, f.date, f.booking_class) : '#';
+        const bookUrl = isAvail ? getKoreanAirBookingUrl(dep, arr, fDate, fClass) : '#';
 
         tbody.innerHTML += `
-          <tr class="${!isPast && f.available ? 'bg-green-50/40 font-semibold' : 'hover:bg-slate-50'}">
+          <tr class="${isAvail ? 'bg-green-50/40 font-semibold' : 'hover:bg-slate-50'}">
             <td class="py-2.5 px-4">${dStr}</td>
-            <td class="py-2.5 px-4">${f.flight_number}</td>
-            <td class="py-2.5 px-4">${f.departure_time || '-'}</td>
-            <td class="py-2.5 px-4">${CLASS_LABELS[f.booking_class] || f.booking_class} <span class="text-xs text-slate-400">(${f.booking_class})</span></td>
+            <td class="py-2.5 px-4">${fNum}</td>
+            <td class="py-2.5 px-4">${fTime}</td>
+            <td class="py-2.5 px-4">${CLASS_LABELS[fClass] || fClass} <span class="text-xs text-slate-400">(${fClass})</span></td>
             <td class="py-2.5 px-4">${statusBadge}</td>
             <td class="py-2.5 px-4 text-right">
-              ${!isPast && f.available ? `<a href="${bookUrl}" target="_blank" class="text-xs bg-kal-blue hover:bg-blue-600 text-white px-2.5 py-1 rounded font-bold shadow-sm" title="${dStr} 항공권 예매 바로가기">예매</a>` : '-'}
+              ${isAvail ? `<a href="${bookUrl}" target="_blank" class="text-xs bg-kal-blue hover:bg-blue-600 text-white px-2.5 py-1 rounded font-bold shadow-sm" title="${dStr} 항공권 예매 바로가기">예매</a>` : '-'}
             </td>
           </tr>
         `;

@@ -91,15 +91,23 @@
         </div>
 
         <!-- Direction Segmented Control -->
-        <div class="mt-4 flex flex-wrap items-center gap-3">
-          <span class="text-xs font-bold text-slate-300">여정 방향:</span>
-          <div class="inline-flex rounded-xl bg-black/25 p-1 border border-white/20 shadow-inner">
-            <button type="button" id="exp-dir-btn-outbound" onclick="setExploreDirection('OUTBOUND')" class="px-4 py-2 text-xs font-bold rounded-lg transition shadow-sm bg-white text-kal-navy">
-              <i class="fa-solid fa-plane-departure mr-1.5 text-kal-blue"></i> 서울 출발 (인천 ➔ 해외)
+        <div class="mt-5 p-3 rounded-2xl bg-black/35 border border-white/25 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shadow-inner">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-black text-white/90 mr-1 flex items-center whitespace-nowrap">
+              <i class="fa-solid fa-route mr-1.5 text-amber-300"></i> 여정 방향:
+            </span>
+            <button type="button" id="exp-dir-btn-outbound" onclick="setExploreDirection('OUTBOUND')" class="flex-1 md:flex-none px-4 py-2.5 text-xs font-black rounded-xl transition shadow-md bg-white text-kal-navy flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-plane-departure text-kal-blue text-sm"></i>
+              <span>🛫 서울 출발 (출국편)</span>
             </button>
-            <button type="button" id="exp-dir-btn-inbound" onclick="setExploreDirection('INBOUND')" class="px-4 py-2 text-xs font-bold rounded-lg transition text-slate-200 hover:text-white hover:bg-white/10">
-              <i class="fa-solid fa-plane-arrival mr-1.5 text-emerald-400"></i> 서울 귀국 (해외 ➔ 인천)
+            <button type="button" id="exp-dir-btn-inbound" onclick="setExploreDirection('INBOUND')" class="flex-1 md:flex-none px-4 py-2.5 text-xs font-black rounded-xl transition text-slate-200 hover:text-white hover:bg-white/10 flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-plane-arrival text-emerald-400 text-sm"></i>
+              <span>🛬 서울 귀국 (귀국편)</span>
             </button>
+          </div>
+          <div class="text-xs text-amber-200/90 font-medium px-1 flex items-center">
+            <i class="fa-solid fa-circle-info mr-1.5 text-amber-300"></i>
+            <span id="exp-dir-guide-text">현재 <b>[서울 ➔ 해외]</b> 출국편 좌석을 조회 중입니다.</span>
           </div>
         </div>
 
