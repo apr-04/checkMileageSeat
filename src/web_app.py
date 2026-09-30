@@ -20,7 +20,6 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from config import load_config, save_config, SEAT_CLASS_NAMES, MAJOR_AIRPORTS, DESTINATIONS_BY_REGION
 from kal_seat_finder import KALAwardFinder
-from notifier import TelegramNotifier
 from tracker import SeatTracker
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -63,13 +62,6 @@ def background_monitor_worker():
         try:
             cfg = load_config()
             routes = cfg.get("routes", [])
-            tg = cfg.get("telegram", {})
-            notifier = TelegramNotifier(
-                bot_token=tg.get("bot_token", ""),
-                chat_id=tg.get("chat_id", ""),
-                enabled=tg.get("enabled", False)
-            )
-
             total_found = 0
             total_new = 0
 
@@ -96,11 +88,7 @@ def background_monitor_worker():
                 total_new += len(new_seats)
 
                 if new_seats:
-                    add_log(f"🔔 {dep_name}➔{arr_name}: 신규 좌석 {len(new_seats)}건 발견! 텔레그램 발송 중...")
-                    if notifier.is_configured():
-                        notifier.notify_seats(new_seats)
-                    else:
-                        add_log("⚠️ 텔레그램 설정이 완료되지 않아 알림이 생략되었습니다.")
+                    add_log(f"🔔 {dep_name}➔{arr_name}: 신규 좌석 {len(new_seats)}건 발견!")
                 else:
                     add_log(f"↳ {dep_name}➔{arr_name}: 현재 {len(seats)}개 잔여 (신규 변동 없음)")
 
@@ -216,15 +204,6 @@ def explore_destinations_api():
     except Exception as e:
         logger.error(f"Explore API error: {e}", exc_info=True)
         return jsonify({"success": False, "message": str(e)}), 500
-
-@app.route("/api/test_telegram", methods=["POST"])
-def test_telegram_api():
-    data = request.json or {}
-    token = data.get("bot_token", "")
-    chat_id = data.get("chat_id", "")
-    notifier = TelegramNotifier(bot_token=token, chat_id=chat_id, enabled=True)
-    res = notifier.test_connection()
-    return jsonify(res)
 
 @app.route("/api/search", methods=["POST"])
 def direct_search_api():

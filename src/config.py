@@ -132,13 +132,8 @@ def save_config(config: Dict[str, Any], config_path: str = DEFAULT_CONFIG_PATH) 
 def get_default_config() -> Dict[str, Any]:
     """기본 설정값을 반환합니다."""
     return {
-        "telegram": {
-            "enabled": False,
-            "bot_token": "",
-            "chat_id": ""
-        },
         "monitoring": {
-            "check_interval_minutes": 15,
+            "check_interval_minutes": 60,
             "notify_on_all_available_on_start": False
         },
         "routes": [

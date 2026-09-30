@@ -165,10 +165,18 @@ async def build_static_dataset(max_months: int = 12, target_departure: str = "IC
             "routes_data": all_routes_data
         }
 
+        total_seats_found = sum(len(r.get("flights", [])) for r in all_routes_data.values())
+        if not destinations_summary or total_seats_found == 0:
+            logger.error(
+                f"❌ 오류: 수집된 유효 좌석 데이터가 0건입니다 (destinations_summary={len(destinations_summary)}, flights={total_seats_found}). "
+                f"네트워크 차단, 세션 오류 등으로 인해 정상 데이터를 받지 못했으므로 기존 {OUTPUT_PATH} 파일을 보존하고 비정상 종료합니다."
+            )
+            sys.exit(1)
+
         with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
             json.dump(dataset, f, ensure_ascii=False, separators=(',', ':'))
 
-        logger.info(f"성공! 경량화된 정적 데이터셋이 저장되었습니다: {OUTPUT_PATH}")
+        logger.info(f"성공! 총 {total_seats_found}건의 좌석 데이터셋이 저장되었습니다: {OUTPUT_PATH}")
 
     finally:
         await finder.close()

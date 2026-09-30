@@ -1,12 +1,6 @@
 {
-  "telegram": {
-    "enabled": false,
-    "bot_token": "YOUR_TELEGRAM_BOT_TOKEN_HERE",
-    "chat_id": "YOUR_TELEGRAM_CHAT_ID_HERE"
-  },
   "monitoring": {
-    "check_interval_minutes": 15,
-    "notify_on_all_available_on_start": false
+    "check_interval_minutes": 60
   },
   "routes": [
     {

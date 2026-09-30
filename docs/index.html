@@ -69,9 +69,6 @@
       <button onclick="switchTab('search')" id="tab-search" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition flex items-center space-x-2 whitespace-nowrap">
         <i class="fa-solid fa-magnifying-glass"></i> <span>특정 노선 상세 조회</span>
       </button>
-      <button onclick="switchTab('guide')" id="tab-guide" class="py-3 px-2 text-slate-500 hover:text-slate-800 transition flex items-center space-x-2 whitespace-nowrap">
-        <i class="fa-brands fa-telegram text-sky-500"></i> <span>텔레그램 자동 알림 설정법</span>
-      </button>
     </div>
   </div>
 
@@ -257,53 +254,6 @@
       </div>
     </div>
 
-    <!-- TAB 3: Telegram Guide -->
-    <div id="view-guide" class="hidden space-y-6">
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6">
-        <div>
-          <h2 class="text-base font-bold text-slate-800 flex items-center">
-            <i class="fa-brands fa-telegram text-sky-500 mr-2 text-xl"></i> GitHub Actions로 24시간 무료 텔레그램 알림 받기
-          </h2>
-          <p class="text-xs text-slate-500 mt-1">내 컴퓨터를 켜두지 않아도, GitHub가 매시 정각마다 자동으로 대한항공 좌석을 확인하고 취소표가 나오면 텔레그램으로 알려줍니다.</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
-            <span class="bg-kal-navy text-white font-bold px-2 py-0.5 rounded text-[10px]">STEP 1</span>
-            <h4 class="font-bold text-slate-800 text-sm">텔레그램 봇 토큰 발급</h4>
-            <p class="text-slate-600 leading-relaxed">
-              1. 텔레그램에서 <b>@BotFather</b> 검색 후 대화 시작<br>
-              2. <code>/newbot</code> 입력 후 봇 생성<br>
-              3. 발급된 <b>HTTP API 토큰</b> 복사<br>
-              4. <b>@userinfobot</b> 에게 대화하여 내 <b>Chat ID 숫자</b> 확인<br>
-              5. 생성한 봇에게 꼭 <b>/start</b> 메시지 1회 전송!
-            </p>
-          </div>
-
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
-            <span class="bg-kal-navy text-white font-bold px-2 py-0.5 rounded text-[10px]">STEP 2</span>
-            <h4 class="font-bold text-slate-800 text-sm">GitHub Secrets 등록</h4>
-            <p class="text-slate-600 leading-relaxed">
-              1. 내 GitHub 저장소의 <b>Settings</b> ➔ <b>Secrets and variables</b> ➔ <b>Actions</b> 이동<br>
-              2. <b>New repository secret</b> 클릭 후 2개 등록:<br>
-              • <code>TELEGRAM_BOT_TOKEN</code> : 내 봇 토큰<br>
-              • <code>TELEGRAM_CHAT_ID</code> : 내 Chat ID
-            </p>
-          </div>
-
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
-            <span class="bg-kal-navy text-white font-bold px-2 py-0.5 rounded text-[10px]">STEP 3</span>
-            <h4 class="font-bold text-slate-800 text-sm">자동 모니터링 활성화</h4>
-            <p class="text-slate-600 leading-relaxed">
-              1. 저장소의 <b>Actions</b> 탭으로 이동<br>
-              2. <b>KAL Award Seat Periodic Monitor</b> 확인<br>
-              3. 이후 매시 정각마다 GitHub가 알아서 좌석을 확인하고 취소표 발생 시 텔레그램으로 알림을 보냅니다!
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </main>
 
   <!-- Detail Modal -->
@@ -373,7 +323,7 @@
           자동 갱신 주기: 매시 정각마다 자동 실행 (1시간 주기, 밴 방지)
         </div>
         <p class="text-[11px] text-blue-700 leading-relaxed">
-          수동으로 새로고침하지 않아도 GitHub Actions가 <b>매시 정각마다</b> 대한항공 전체 노선을 자동 검사하여 웹사이트 데이터를 갱신하고, 새로운 빈 좌석 발견 시 텔레그램으로 알림을 보냅니다.
+          수동으로 새로고침하지 않아도 GitHub Actions가 <b>매시 정각마다</b> 대한항공 전체 노선을 자동 검사하여 웹사이트 데이터를 최신 상태로 갱신합니다.
         </p>
       </div>
 
@@ -454,14 +404,22 @@
     }
 
     function switchTab(tId) {
-      ['explore', 'search', 'guide'].forEach(t => {
-        document.getElementById(`view-${t}`).classList.add('hidden');
-        document.getElementById(`tab-${t}`).classList.remove('tab-active');
-        document.getElementById(`tab-${t}`).classList.add('text-slate-500');
+      ['explore', 'search'].forEach(t => {
+        const view = document.getElementById(`view-${t}`);
+        const tab = document.getElementById(`tab-${t}`);
+        if (view) view.classList.add('hidden');
+        if (tab) {
+          tab.classList.remove('tab-active');
+          tab.classList.add('text-slate-500');
+        }
       });
-      document.getElementById(`view-${tId}`).classList.remove('hidden');
-      document.getElementById(`tab-${tId}`).classList.add('tab-active');
-      document.getElementById(`tab-${tId}`).classList.remove('text-slate-500');
+      const targetView = document.getElementById(`view-${tId}`);
+      const targetTab = document.getElementById(`tab-${tId}`);
+      if (targetView) targetView.classList.remove('hidden');
+      if (targetTab) {
+        targetTab.classList.add('tab-active');
+        targetTab.classList.remove('text-slate-500');
+      }
     }
 
     async function loadData() {

@@ -1,4 +1,4 @@
-name: KAL Award Seat Monitor & Web Dataset Builder
+name: KAL Award Seat Web Dataset Builder
 
 on:
   schedule:
@@ -6,18 +6,12 @@ on:
     - cron: '0 * * * *'
   # GitHub 웹사이트에서 언제든 [Run workflow] 버튼으로 즉시 실행 가능
   workflow_dispatch:
-    inputs:
-      notify_all:
-        description: '신규 여부와 관계없이 현재 발견된 모든 좌석 강제 알림'
-        required: false
-        default: false
-        type: boolean
 
 permissions:
   contents: write
 
 jobs:
-  check-seats:
+  build-dataset:
     runs-on: self-hosted
     timeout-minutes: 30
 
@@ -50,23 +44,6 @@ jobs:
         run: |
           python -m playwright install chromium
         continue-on-error: true
-
-      - name: Prepare config file
-        run: |
-          if (!(Test-Path config.json)) {
-            Copy-Item config.example.json config.json
-          }
-
-      - name: Run Award Seat Telegram Check
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          if ("${{ github.event.inputs.notify_all }}" -eq "true") {
-            python src/monitor.py --once --notify-all
-          } else {
-            python src/monitor.py --once
-          }
 
       - name: Build Web Dataset for GitHub Pages (Up to 12 Months)
         run: |

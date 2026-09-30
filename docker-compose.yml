@@ -11,6 +11,3 @@ services:
       # 설정 및 캐시 영구 보존
       - ./config.json:/app/config.json
       - ./data:/app/data
-    environment:
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
-      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}

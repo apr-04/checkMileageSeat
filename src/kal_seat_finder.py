@@ -34,13 +34,29 @@ class KALAwardFinder:
         :param proxy: 프록시 서버 URL (예: http://user:pass@host:port 또는 socks5://host:port)
         :param user_data_dir: 브라우저 영구 프로필 디렉터리 경로 (쿠키, 세션, Akamai 센서 데이터 보존)
         """
-        has_display = sys.platform == "win32" or "DISPLAY" in os.environ
+        is_windows = sys.platform == "win32"
+        is_session_0 = False
+        if is_windows:
+            try:
+                import ctypes
+                sid = ctypes.c_ulong()
+                if ctypes.windll.kernel32.ProcessIdToSessionId(ctypes.windll.kernel32.GetCurrentProcessId(), ctypes.byref(sid)):
+                    is_session_0 = (sid.value == 0)
+            except Exception:
+                pass
+
         if headless is None:
-            # Akamai WAF 차단(403/ERR_HTTP2_PROTOCOL_ERROR) 방지를 위해
-            # GUI 디스플레이가 가능한 환경(Windows 또는 Linux xvfb)에서는 헤디드(오프스크린) 모드 사용
-            self.headless = False if has_display else True
+            if is_session_0:
+                # Windows 서비스(Session 0) 환경에서는 데스크톱 GUI 생성이 불가능하므로 Headless 필수
+                self.headless = True
+            elif is_windows or "DISPLAY" in os.environ:
+                self.headless = False
+            else:
+                self.headless = True
         else:
-            if has_display and headless is True:
+            if is_session_0:
+                self.headless = True
+            elif (is_windows or "DISPLAY" in os.environ) and headless is True:
                 if os.environ.get("FORCE_HEADLESS", "").lower() in ("1", "true"):
                     self.headless = True
                 else:
@@ -49,9 +65,12 @@ class KALAwardFinder:
                 self.headless = headless
 
         self.proxy = proxy or os.environ.get("HTTPS_PROXY") or os.environ.get("HTTP_PROXY")
-        self.user_data_dir = user_data_dir or os.path.join(
-            os.environ.get("LOCALAPPDATA", tempfile.gettempdir()), "kal_browser_profile"
-        )
+        
+        # Session 0 / 서비스 계정 환경을 고려한 안전한 임시 프로필 경로 산출
+        profile_base = os.environ.get("LOCALAPPDATA", "")
+        if not profile_base or "ServiceProfiles" in profile_base or is_session_0:
+            profile_base = tempfile.gettempdir()
+        self.user_data_dir = user_data_dir or os.path.join(profile_base, "kal_browser_profile")
         os.makedirs(self.user_data_dir, exist_ok=True)
 
         self._pw = None
@@ -122,7 +141,17 @@ class KALAwardFinder:
             launch_kwargs["proxy"] = {"server": self.proxy}
 
         try:
-            self._context = await self._pw.chromium.launch_persistent_context(**launch_kwargs)
+            try:
+                self._context = await self._pw.chromium.launch_persistent_context(**launch_kwargs)
+            except Exception as launch_err:
+                if not self.headless:
+                    logger.warning(f"헤디드 브라우저 실행 실패 ({launch_err}). Headless 모드로 전환하여 재시도합니다...")
+                    self.headless = True
+                    launch_kwargs["headless"] = True
+                    launch_kwargs["args"] = [a for a in launch_kwargs["args"] if not a.startswith("--window-position")]
+                    self._context = await self._pw.chromium.launch_persistent_context(**launch_kwargs)
+                else:
+                    raise launch_err
             self._page = self._context.pages[0] if self._context.pages else await self._context.new_page()
 
             logger.info("대한항공 보너스 좌석 페이지 접속 및 Akamai 세션 획득 중...")
