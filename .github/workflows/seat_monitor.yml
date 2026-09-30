@@ -21,64 +21,66 @@ jobs:
     runs-on: self-hosted
     timeout-minutes: 30
 
+    defaults:
+      run:
+        shell: powershell
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
+      - name: Ensure Python is in PATH
+        run: |
+          $pyCandidates = @(
+            "C:\Users\aumie\AppData\Local\Programs\Python\Python314",
+            "C:\Users\aumie\AppData\Local\Programs\Python\Python314\Scripts"
+          )
+          foreach ($p in $pyCandidates) {
+            if (Test-Path $p) {
+              Add-Content $env:GITHUB_PATH $p
+            }
+          }
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Install Playwright browsers & dependencies
+      - name: Install Playwright browsers
         run: |
-          python -m playwright install --with-deps chromium
-
-      - name: Restore seat cache (to prevent duplicate alerts)
-        uses: actions/cache@v4
-        with:
-          path: data/seat_cache.json
-          key: seat-cache-${{ github.run_id }}
-          restore-keys: |
-            seat-cache-
+          python -m playwright install chromium
+        continue-on-error: true
 
       - name: Prepare config file
         run: |
-          if [ ! -f config.json ]; then
-            cp config.example.json config.json
-          fi
+          if (!(Test-Path config.json)) {
+            Copy-Item config.example.json config.json
+          }
 
       - name: Run Award Seat Telegram Check
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          if [ "${{ github.event.inputs.notify_all }}" = "true" ]; then
-            xvfb-run -a python src/monitor.py --once --notify-all
-          else
-            xvfb-run -a python src/monitor.py --once
-          fi
-
-      - name: Save updated seat cache
-        uses: actions/cache/save@v4
-        if: always()
-        with:
-          path: data/seat_cache.json
-          key: seat-cache-${{ github.run_id }}
+          if ("${{ github.event.inputs.notify_all }}" -eq "true") {
+            python src/monitor.py --once --notify-all
+          } else {
+            python src/monitor.py --once
+          }
 
       - name: Build Web Dataset for GitHub Pages (Up to 12 Months)
         run: |
-          xvfb-run -a python src/build_static_data.py 12
+          python src/build_static_data.py 12
 
       - name: Commit & push updated dataset to GitHub Pages
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/data/latest_seats.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update award seat dataset [skip ci]" && git push origin main)
+          $status = git status --porcelain docs/data/latest_seats.json
+          if ($status) {
+            git commit -m "chore: auto-update award seat dataset [skip ci]"
+            git push origin main
+          } else {
+            Write-Host "No changes in latest_seats.json to commit."
+          }

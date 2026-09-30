@@ -52,3 +52,7 @@ Thumbs.db
 *.png
 captured_apis.json
 captured_search_apis.json
+
+# GitHub Actions Self-Hosted Runner
+actions-runner/
+
