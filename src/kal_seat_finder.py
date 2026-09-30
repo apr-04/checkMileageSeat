@@ -423,20 +423,25 @@ class KALAwardFinder:
 
     async def close(self):
         """브라우저 리소스를 해제합니다."""
-        try:
-            if self._page:
+        if self._page:
+            try:
                 await self._page.close()
-            if self._context:
+            except Exception:
+                pass
+        if self._context:
+            try:
                 await self._context.close()
-            if self._pw:
+            except Exception:
+                pass
+        if self._pw:
+            try:
                 await self._pw.stop()
-        except Exception:
-            pass
-        finally:
-            self._initialized = False
-            self._page = None
-            self._context = None
-            self._pw = None
+            except Exception:
+                pass
+        self._initialized = False
+        self._page = None
+        self._context = None
+        self._pw = None
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")

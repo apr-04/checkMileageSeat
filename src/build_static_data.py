@@ -87,7 +87,14 @@ async def build_static_dataset(max_months: int = 12, target_departure: str = "IC
         today_str = now.strftime("%Y%m%d")
         now_time_str = now.strftime("%H:%M")
 
-        for r in routes_to_scan:
+        for idx, r in enumerate(routes_to_scan):
+            if idx > 0 and idx % 12 == 0:
+                logger.info(f"스캔 진행 중({idx}/{len(routes_to_scan)}): 브라우저 안정성을 위해 세션을 클린 갱신합니다...")
+                try:
+                    await finder.refresh_session()
+                except Exception as e:
+                    logger.warning(f"세션 주기 갱신 예외({e}), 계속 진행...")
+
             direction = r["direction"]
             dep = r["dep"]
             arr = r["arr"]
