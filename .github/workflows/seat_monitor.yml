@@ -41,9 +41,9 @@ jobs:
           pip install -r requirements.txt
 
 
-      - name: Build Web Dataset for GitHub Pages (Up to 12 Months)
+      - name: Build Web Dataset for GitHub Pages (Up to 14 Months)
         run: |
-          python src/build_static_data.py 12
+          python src/build_static_data.py 14
 
       - name: Commit & push updated dataset to GitHub Pages
         run: |

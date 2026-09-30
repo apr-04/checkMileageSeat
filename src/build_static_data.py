@@ -24,10 +24,10 @@ logger = logging.getLogger("build_static_data")
 
 OUTPUT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "data", "latest_seats.json")
 
-async def build_static_dataset(max_months: int = 12, target_departure: str = "ICN"):
+async def build_static_dataset(max_months: int = 14, target_departure: str = "ICN"):
     """
     주요 목적지들의 마일리지 좌석을 일괄 스캔하여 GitHub Pages용 정적 데이터셋(latest_seats.json)을 생성합니다.
-    대한항공 마일리지 예약 가능한 최대 기간(향후 약 360일 / 12개월)을 지원합니다.
+    대한항공 마일리지 예약 가능한 최대 기간(향후 361일, 당월 포함 최대 14개월)을 지원합니다.
     """
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
 
@@ -189,8 +189,8 @@ async def build_static_dataset(max_months: int = 12, target_departure: str = "IC
         await finder.close()
 
 if __name__ == "__main__":
-    # 기본 12개월(최대 예약 가능 범위) 빌드
-    months_count = 12
+    # 기본 14개월(최대 예약 가능 범위 361일) 빌드
+    months_count = 14
     if len(sys.argv) > 1:
         try:
             months_count = int(sys.argv[1])
