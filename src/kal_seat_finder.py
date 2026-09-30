@@ -1,8 +1,11 @@
 import asyncio
+import datetime
 import json
 import logging
 import os
+import random
 import sys
+import tempfile
 import time
 from typing import List, Dict, Any, Optional
 
@@ -13,17 +16,45 @@ if sys.platform == "win32":
     except Exception:
         pass
 
-from playwright.async_api import async_playwright, Browser, BrowserContext, Page
+from playwright.async_api import async_playwright, BrowserContext, Page
 
 logger = logging.getLogger("kal_finder")
 
 class KALAwardFinder:
-    """대한항공 보너스 항공권 좌석 조회 엔진"""
+    """대한항공 보너스 항공권 좌석 조회 엔진 (Akamai WAF 우회 & 세션 지속성 적용)"""
 
-    def __init__(self, headless: bool = True):
-        self.headless = headless
+    def __init__(
+        self,
+        headless: Optional[bool] = None,
+        proxy: Optional[str] = None,
+        user_data_dir: Optional[str] = None
+    ):
+        """
+        :param headless: 헤드리스 모드 여부. None일 경우 환경에 따라 자동 결정 (Windows에서는 Akamai WAF 우회를 위해 기본 False/오프스크린 모드)
+        :param proxy: 프록시 서버 URL (예: http://user:pass@host:port 또는 socks5://host:port)
+        :param user_data_dir: 브라우저 영구 프로필 디렉터리 경로 (쿠키, 세션, Akamai 센서 데이터 보존)
+        """
+        if headless is None:
+            # 윈도우 환경에서는 일반 헤드리스 시 Akamai WAF 차단(403/ERR_HTTP2_PROTOCOL_ERROR)이 발생하므로
+            # 기본적으로 헤디드 모드(오프스크린)로 실행하여 정상 브라우저 지문 유지
+            self.headless = False if sys.platform == "win32" else True
+        else:
+            if sys.platform == "win32" and headless is True:
+                # 윈도우에서 명시적으로 FORCE_HEADLESS=1이 지정되지 않았다면 WAF 우회를 위해 off-screen headed 사용
+                if os.environ.get("FORCE_HEADLESS", "").lower() in ("1", "true"):
+                    self.headless = True
+                else:
+                    self.headless = False
+            else:
+                self.headless = headless
+
+        self.proxy = proxy or os.environ.get("HTTPS_PROXY") or os.environ.get("HTTP_PROXY")
+        self.user_data_dir = user_data_dir or os.path.join(
+            os.environ.get("LOCALAPPDATA", tempfile.gettempdir()), "kal_browser_profile"
+        )
+        os.makedirs(self.user_data_dir, exist_ok=True)
+
         self._pw = None
-        self._browser: Optional[Browser] = None
         self._context: Optional[BrowserContext] = None
         self._page: Optional[Page] = None
         self._initialized = False
@@ -55,47 +86,72 @@ class KALAwardFinder:
         return None
 
     async def init_session(self):
-        """대한항공 웹사이트에 접속하여 유효한 브라우저 세션을 초기화합니다."""
+        """대한항공 웹사이트에 접속하여 유효한 Akamai 세션 및 브라우저 컨텍스트를 초기화합니다."""
         if self._initialized and self._page and not self._page.is_closed():
             return
 
         chrome_path = self._get_chrome_path()
-        logger.info(f"브라우저 실행 중 (실행 경로: {chrome_path or 'Playwright 내장 Chromium'})...")
-        
+        logger.info(f"브라우저 실행 중 (경로: {chrome_path or 'Playwright Chromium'}, Headless: {self.headless})...")
+
         self._pw = await async_playwright().start()
+
+        args = [
+            "--disable-blink-features=AutomationControlled",
+            "--no-sandbox",
+            "--disable-infobars",
+            "--disable-dev-shm-usage"
+        ]
+        # 사용자의 화면을 가리거나 방해하지 않도록 화면 밖으로 배치
+        if not self.headless:
+            args.extend([
+                "--window-position=-2000,-2000",
+                "--window-size=1400,900"
+            ])
+
         launch_kwargs = {
+            "user_data_dir": self.user_data_dir,
             "headless": self.headless,
-            "args": [
-                "--disable-blink-features=AutomationControlled",
-                "--no-sandbox",
-                "--disable-infobars",
-                "--disable-dev-shm-usage"
-            ]
+            "args": args,
+            "viewport": {"width": 1400, "height": 900},
+            "locale": "ko-KR"
         }
         if chrome_path:
             launch_kwargs["executable_path"] = chrome_path
+        if self.proxy:
+            logger.info(f"프록시 서버 설정 적용: {self.proxy}")
+            launch_kwargs["proxy"] = {"server": self.proxy}
 
-        self._browser = await self._pw.chromium.launch(**launch_kwargs)
-        self._context = await self._browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-            viewport={"width": 1400, "height": 900},
-            locale="ko-KR"
-        )
-        self._page = await self._context.new_page()
-        await self._page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
-
-        logger.info("대한항공 보너스 좌석 페이지 접속 및 세션 획득 중...")
         try:
+            self._context = await self._pw.chromium.launch_persistent_context(**launch_kwargs)
+            self._page = self._context.pages[0] if self._context.pages else await self._context.new_page()
+
+            logger.info("대한항공 보너스 좌석 페이지 접속 및 Akamai 세션 획득 중...")
             await self._page.goto(
                 "https://www.koreanair.com/booking/book-and-manage/award-seat-availability",
                 wait_until="domcontentloaded",
-                timeout=30000
+                timeout=45000
             )
-            # 쿠키 팝업 허용 버튼 처리
-            await self._page.wait_for_timeout(1500)
-            cookie_btn = await self._page.query_selector('button:has-text("모든 쿠키 허용")')
-            if cookie_btn:
-                await cookie_btn.click()
+            await self._page.wait_for_timeout(2000)
+
+            # Akamai 센서 스크립트 활성화를 위한 마우스 이동
+            try:
+                for i in range(8):
+                    await self._page.mouse.move(150 + i * 35, 120 + i * 20)
+                    await asyncio.sleep(0.05)
+            except Exception:
+                pass
+
+            # 쿠키 및 모달 오버레이 제거
+            try:
+                await self._page.evaluate('''() => {
+                    const b = document.querySelector('ke-biscuit-banner') || document.querySelector('kc-global-cookie-banner');
+                    if (b) b.remove();
+                    const overlay = document.querySelector('.modal-backdrop');
+                    if (overlay) overlay.remove();
+                }''')
+            except Exception:
+                pass
+
             self._initialized = True
             logger.info("대한항공 세션 초기화 완료!")
         except Exception as e:
@@ -103,13 +159,37 @@ class KALAwardFinder:
             await self.close()
             raise
 
-    async def fetch_month_seats(self, dep: str, arr: str, year_month: str) -> List[Dict[str, Any]]:
+    async def refresh_session(self):
+        """차단 또는 세션 만료 시 페이지를 재방문하고 센서 토큰을 갱신합니다."""
+        if not self._page or self._page.is_closed():
+            self._initialized = False
+            await self.init_session()
+            return
+
+        try:
+            logger.info("Akamai 센서 토큰 및 세션 갱신 중...")
+            await self._page.goto(
+                "https://www.koreanair.com/booking/book-and-manage/award-seat-availability",
+                wait_until="domcontentloaded",
+                timeout=30000
+            )
+            await self._page.wait_for_timeout(2000)
+            for i in range(5):
+                await self._page.mouse.move(100 + i * 50, 120 + i * 30)
+                await asyncio.sleep(0.05)
+        except Exception as e:
+            logger.warning(f"세션 갱신 실패, 세션 완전 재시작: {e}")
+            await self.close()
+            await self.init_session()
+
+    async def fetch_month_seats(self, dep: str, arr: str, year_month: str, max_retries: int = 3) -> List[Dict[str, Any]]:
         """
         특정 노선 및 월에 대한 모든 항공편의 보너스 좌석 현황을 조회합니다.
         
         :param dep: 출발 공항 코드 (예: ICN)
         :param arr: 도착 공항 코드 (예: NRT, CDG)
         :param year_month: 년월 문자열 (예: 202610 또는 2026-10)
+        :param max_retries: 403 차단 시 재시도 횟수
         :return: 좌석 가능 여부가 포함된 항공편 목록
         """
         if not self._initialized:
@@ -125,9 +205,11 @@ class KALAwardFinder:
                 const res = await fetch("/api/hmp/bonusSeatView/bonusSeatView", {{
                     method: "POST",
                     headers: {{
-                        "Content-Type": "application/json",
+                        "accept": "application/json, text/plain, */*",
                         "channel": "pc",
-                        "timestamp": Date.now().toString()
+                        "content-type": "application/json",
+                        "timestamp": Date.now().toString(),
+                        "Referer": "https://www.koreanair.com/booking/book-and-manage/award-seat-availability"
                     }},
                     body: JSON.stringify({{
                         departureAirport: "{dep}",
@@ -144,13 +226,23 @@ class KALAwardFinder:
             }}
         }}"""
 
-        try:
-            raw_data = await self._page.evaluate(js_script)
-        except Exception as e:
-            logger.warning(f"API 호출 중 세션 오류 발생({e}), 세션 재연결 시도...")
-            self._initialized = False
-            await self.init_session()
-            raw_data = await self._page.evaluate(js_script)
+        raw_data = None
+        for attempt in range(max_retries):
+            try:
+                raw_data = await self._page.evaluate(js_script)
+            except Exception as e:
+                logger.warning(f"API 호출 중 예외 발생({e}), 세션 재연결 시도...")
+                await self.refresh_session()
+                continue
+
+            if raw_data and "error" in raw_data and "403" in str(raw_data.get("error")):
+                backoff = (attempt + 1) * 8
+                logger.warning(f"Akamai HTTP 403 감지됨 (시도 {attempt+1}/{max_retries}). {backoff}초 대기 후 세션 갱신 및 재시도...")
+                await asyncio.sleep(backoff)
+                await self.refresh_session()
+                continue
+
+            break
 
         if not raw_data or "error" in raw_data:
             err = raw_data.get("error", "알 수 없는 오류") if raw_data else "빈 응답"
@@ -204,8 +296,8 @@ class KALAwardFinder:
         for ym in months:
             month_seats = await self.fetch_month_seats(dep, arr, ym)
             all_results.extend(month_seats)
-            # 서버 부하 방지를 위한 짧은 딜레이
-            await asyncio.sleep(0.5)
+            # 서버 부하 및 차단 방지를 위한 자연스러운 랜덤 딜레이
+            await asyncio.sleep(random.uniform(0.8, 1.6))
 
         filtered = []
         for item in all_results:
@@ -290,8 +382,8 @@ class KALAwardFinder:
                         "all_flights": avail_flights
                     })
 
-                # 부하 방지용 짧은 딜레이
-                await asyncio.sleep(0.25)
+                # 부하 방지용 랜덤 딜레이
+                await asyncio.sleep(random.uniform(0.8, 1.5))
 
             except Exception as e:
                 logger.error(f"[{direction}] {scan_dep} -> {scan_arr} 조회 실패: {e}")
@@ -307,8 +399,6 @@ class KALAwardFinder:
                 await self._page.close()
             if self._context:
                 await self._context.close()
-            if self._browser:
-                await self._browser.close()
             if self._pw:
                 await self._pw.stop()
         except Exception:
@@ -317,19 +407,18 @@ class KALAwardFinder:
             self._initialized = False
             self._page = None
             self._context = None
-            self._browser = None
             self._pw = None
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
     async def demo():
-        finder = KALAwardFinder(headless=True)
+        finder = KALAwardFinder()
         try:
             results = await finder.search_route_award_seats(
                 dep="ICN",
                 arr="NRT",
-                months=["202610"],
+                months=["202611"],
                 target_classes=["X", "O", "A"],
                 only_available=True
             )

@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 import os
+import random
 import sys
 
 # Ensure utf-8 stdout on Windows
@@ -76,7 +77,7 @@ async def build_static_dataset(max_months: int = 12, target_departure: str = "IC
                 "arr": target_departure
             })
 
-    finder = KALAwardFinder(headless=True)
+    finder = KALAwardFinder()
     all_routes_data = {}
     destinations_summary = []
 
@@ -144,9 +145,13 @@ async def build_static_dataset(max_months: int = 12, target_departure: str = "IC
                             "dates": sorted(list(set(s["date"] for s in avail)))
                         })
 
-                    await asyncio.sleep(0.25)
+                    # WAF 부하 방지를 위한 랜덤 딜레이 (0.8s ~ 1.5s)
+                    await asyncio.sleep(random.uniform(0.8, 1.5))
                 except Exception as e:
                     logger.error(f"  [{direction}] {dep}->{arr} {ym} 실패: {e}")
+
+            # 노선 간 쿨다운 (1.5s ~ 2.5s)
+            await asyncio.sleep(random.uniform(1.5, 2.5))
 
         # 메타데이터 및 최종 저장 객체
         dataset = {
