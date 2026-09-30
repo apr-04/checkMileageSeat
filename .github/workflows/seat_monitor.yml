@@ -2,8 +2,8 @@ name: KAL Award Seat Monitor & Web Dataset Builder
 
 on:
   schedule:
-    # 매 30분마다 자동 실행 (UTC 기준)
-    - cron: '*/30 * * * *'
+    # 매시 정각마다 자동 실행 (UTC 기준 0분, 1시간 주기, WAF 밴 방지)
+    - cron: '0 * * * *'
   # GitHub 웹사이트에서 언제든 [Run workflow] 버튼으로 즉시 실행 가능
   workflow_dispatch:
     inputs:
