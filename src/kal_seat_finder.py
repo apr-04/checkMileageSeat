@@ -34,13 +34,13 @@ class KALAwardFinder:
         :param proxy: 프록시 서버 URL (예: http://user:pass@host:port 또는 socks5://host:port)
         :param user_data_dir: 브라우저 영구 프로필 디렉터리 경로 (쿠키, 세션, Akamai 센서 데이터 보존)
         """
+        has_display = sys.platform == "win32" or "DISPLAY" in os.environ
         if headless is None:
-            # 윈도우 환경에서는 일반 헤드리스 시 Akamai WAF 차단(403/ERR_HTTP2_PROTOCOL_ERROR)이 발생하므로
-            # 기본적으로 헤디드 모드(오프스크린)로 실행하여 정상 브라우저 지문 유지
-            self.headless = False if sys.platform == "win32" else True
+            # Akamai WAF 차단(403/ERR_HTTP2_PROTOCOL_ERROR) 방지를 위해
+            # GUI 디스플레이가 가능한 환경(Windows 또는 Linux xvfb)에서는 헤디드(오프스크린) 모드 사용
+            self.headless = False if has_display else True
         else:
-            if sys.platform == "win32" and headless is True:
-                # 윈도우에서 명시적으로 FORCE_HEADLESS=1이 지정되지 않았다면 WAF 우회를 위해 off-screen headed 사용
+            if has_display and headless is True:
                 if os.environ.get("FORCE_HEADLESS", "").lower() in ("1", "true"):
                     self.headless = True
                 else:
