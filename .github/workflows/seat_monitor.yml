@@ -7,6 +7,10 @@ on:
   # GitHub 웹사이트에서 언제든 [Run workflow] 버튼으로 즉시 실행 가능
   workflow_dispatch:
 
+concurrency:
+  group: kal-dataset-builder
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
