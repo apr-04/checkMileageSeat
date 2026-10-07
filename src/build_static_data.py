@@ -31,18 +31,26 @@ async def build_static_dataset(max_months: int = 14, target_departure: str = "IC
     """
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
 
-    # 한국 표준시(KST) 기준 설정
+    # 한국 표준시(KST) 기준 현재 일자 및 361일(대한항공 마일리지 예약 가능 기간) 산출
     KST = datetime.timezone(datetime.timedelta(hours=9))
     now = datetime.datetime.now(KST)
-    year = now.year
-    month = now.month
+    today = now.date()
+    max_date = today + datetime.timedelta(days=361)
+
+    today_str = today.strftime("%Y%m%d")
+    max_date_str = max_date.strftime("%Y%m%d")
+    now_time_str = now.strftime("%H:%M")
+
+    # 오늘이 속한 년월부터 361일 후가 속한 년월까지 동적 산출 (과거 월 자동 배제, 내년 오픈 월 포함)
+    curr_y, curr_m = today.year, today.month
+    end_y, end_m = max_date.year, max_date.month
     months_to_scan = []
-    for _ in range(max_months):
-        months_to_scan.append(f"{year}{month:02d}")
-        month += 1
-        if month > 12:
-            month = 1
-            year += 1
+    while (curr_y < end_y) or (curr_y == end_y and curr_m <= end_m):
+        months_to_scan.append(f"{curr_y}{curr_m:02d}")
+        curr_m += 1
+        if curr_m > 12:
+            curr_m = 1
+            curr_y += 1
 
     # 대표 목적지 목록 추출
     key_destinations = [
@@ -117,11 +125,11 @@ async def build_static_dataset(max_months: int = 14, target_departure: str = "IC
                 try:
                     month_seats = await finder.fetch_month_seats(dep, arr, ym)
 
-                    # 과거 날짜 및 이미 출발한 당일 항공편 제외 처리
+                    # 과거 날짜, 361일 초과 미래 항공편, 이미 출발한 당일 항공편 제외 처리
                     for s in month_seats:
                         f_date = s.get("date", "")
                         f_time = s.get("departure_time", "")
-                        if f_date < today_str:
+                        if f_date < today_str or f_date > max_date_str:
                             s["available"] = False
                         elif f_date == today_str and f_time and f_time <= now_time_str:
                             s["available"] = False
@@ -165,6 +173,9 @@ async def build_static_dataset(max_months: int = 14, target_departure: str = "IC
             "updated_at": datetime.datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S (KST)"),
             "departure": target_departure,
             "departure_name": MAJOR_AIRPORTS.get(target_departure, target_departure),
+            "booking_window_days": 361,
+            "start_date": today_str,
+            "end_date": max_date_str,
             "months": months_to_scan,
             "airports": MAJOR_AIRPORTS,
             "regions": DESTINATIONS_BY_REGION,

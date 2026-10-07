@@ -476,17 +476,50 @@
 
       document.getElementById('last-updated').innerText = globalDataset.updated_at || '방금 전';
 
-      // Month select options
+      // 현재 KST 기준 년월 및 오늘 날짜, 361일(최대 발권 범위) 후 년월 계산
+      const nowKst = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+      const currentYm = `${nowKst.getFullYear()}${String(nowKst.getMonth() + 1).padStart(2, '0')}`;
+      const maxKst = new Date(nowKst.getTime() + 361 * 24 * 60 * 60 * 1000);
+      const maxYm = `${maxKst.getFullYear()}${String(maxKst.getMonth() + 1).padStart(2, '0')}`;
+
+      // Month select options (과거 월 배제, 361일 범위 보장)
       const mSelect = document.getElementById('exp-month');
       const rMSelect = document.getElementById('route-month');
       mSelect.innerHTML = '';
       rMSelect.innerHTML = '';
 
-      (globalDataset.months || []).forEach(m => {
+      // 1) 데이터셋에서 과거 월 제외
+      let activeMonths = (globalDataset.months || []).filter(m => m >= currentYm);
+
+      // 2) 오늘 기준 361일 범위의 모든 월(내년 오픈 월 포함) 산출
+      let tmpY = nowKst.getFullYear();
+      let tmpM = nowKst.getMonth() + 1;
+      const endY = maxKst.getFullYear();
+      const endM = maxKst.getMonth() + 1;
+      const windowMonths = [];
+      while ((tmpY < endY) || (tmpY === endY && tmpM <= endM)) {
+        windowMonths.push(`${tmpY}${String(tmpM).padStart(2, '0')}`);
+        tmpM++;
+        if (tmpM > 12) {
+          tmpM = 1;
+          tmpY++;
+        }
+      }
+
+      // 3) 합집합 정렬 (과거 월은 일체 배제되며 오늘~361일 내년 월까지 완벽 표시)
+      const allValidMonths = Array.from(new Set([...activeMonths, ...windowMonths])).sort();
+
+      allValidMonths.forEach(m => {
         const lbl = `${m.substring(0,4)}년 ${m.substring(4)}월`;
         mSelect.add(new Option(lbl, m));
         rMSelect.add(new Option(lbl, m));
       });
+
+      // 기본 선택값을 현재 월(currentYm)로 확실하게 설정
+      if (allValidMonths.includes(currentYm)) {
+        mSelect.value = currentYm;
+        rMSelect.value = currentYm;
+      }
 
       // Airport options for route-dep and route-arr
       const depSelect = document.getElementById('route-dep');
@@ -591,10 +624,17 @@
         return;
       }
 
-      const todayStr = new Date().toLocaleDateString('ko-KR', {year:'numeric', month:'2-digit', day:'2-digit'}).replace(/[^0-9]/g, '');
-      const nowTimeStr = new Date().toTimeString().slice(0, 5);
+      const todayKst = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+      const todayStr = `${todayKst.getFullYear()}${String(todayKst.getMonth() + 1).padStart(2, '0')}${String(todayKst.getDate()).padStart(2, '0')}`;
+      const maxDateKst = new Date(todayKst.getTime() + 361 * 24 * 60 * 60 * 1000);
+      const maxDateStr = `${maxDateKst.getFullYear()}${String(maxDateKst.getMonth() + 1).padStart(2, '0')}${String(maxDateKst.getDate()).padStart(2, '0')}`;
+      const nowTimeStr = todayKst.toTimeString().slice(0, 5);
 
       matched.forEach(item => {
+        // 오늘 이전 과거 날짜 및 361일 초과 미래 날짜 제외 필터링
+        const validDates = (item.dates || []).filter(d => d >= todayStr && d <= maxDateStr);
+        if (validDates.length === 0 && item.month <= currentYm) return;
+
         const hasPrestige = item.classes.includes('O');
         const hasFirst = item.classes.includes('A');
         const hasUpgradeOnly = !hasPrestige && item.classes.includes('Z');
@@ -611,8 +651,6 @@
           badgeText = '좌석승급(Z)만 가능';
         }
 
-        // 과거 날짜 제외 필터링
-        const validDates = (item.dates || []).filter(d => d >= todayStr);
         const displayDates = validDates.length > 0 ? validDates : (item.dates || []);
         const targetDate = validDates.length > 0 ? validDates[0] : (item.dates[0] || item.month + '01');
         const targetClass = hasFirst ? 'A' : (hasPrestige ? 'O' : 'X');
